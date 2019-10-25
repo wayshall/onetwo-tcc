@@ -6,19 +6,19 @@ import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-public class TransactionSynchronization extends TransactionSynchronizationAdapter {
+public class TCCTransactionSynchronization extends TransactionSynchronizationAdapter {
 	
 	final private Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	final private TransactionResourceHolder resourceHolder;
 	
-	public TransactionSynchronization(TransactionResourceHolder resourceHolder){
+	public TCCTransactionSynchronization(TransactionResourceHolder resourceHolder){
 		this.resourceHolder = resourceHolder;
 	}
 	
 	@Override
 	public int getOrder() {
-		return DataSourceUtils.CONNECTION_SYNCHRONIZATION_ORDER - 100;
+		return DataSourceUtils.CONNECTION_SYNCHRONIZATION_ORDER + 100;
 	}
 
 	/***
@@ -42,13 +42,14 @@ public class TransactionSynchronization extends TransactionSynchronizationAdapte
 		if(logger.isDebugEnabled()){
 			logger.debug("tcc transaction synchronization committing ");
 		}
+		resourceHolder.updateTxLogCommitted();
 	}
 
 	@Override
 	public void afterCompletion(int status) {
-		if (status==TransactionSynchronization.STATUS_COMMITTED) {
+		if (status==TCCTransactionSynchronization.STATUS_COMMITTED) {
 		} else {
-			//rollback
+			resourceHolder.updateTxLogRollbacked();
 		}
 	}
 	

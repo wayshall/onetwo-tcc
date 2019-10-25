@@ -7,7 +7,7 @@ package org.onetwo.tcc.util;
  */
 public enum TCCTransactionType {
 
-	MAIN,
+	GLOBAL,
 	BRANCH
 	
 }

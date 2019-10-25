@@ -1,5 +1,6 @@
 package org.onetwo.tcc;
 
+import org.onetwo.tcc.entity.TXLogEntity;
 import org.onetwo.tcc.util.TCCTransactionType;
 import org.springframework.transaction.support.ResourceHolderSupport;
 
@@ -39,6 +40,30 @@ public class TransactionResourceHolder extends ResourceHolderSupport {
 	 */
 	public void check() {
 		// check consumer method exists
+	}
+	
+	public TXLogEntity createTxLog() {
+		TXLogEntity log = transactionAspect.getTxLogRepository().create(this);
+		return log;
+	}
+	
+	public TXLogEntity updateTxLogCommitted() {
+		TXLogEntity log = transactionAspect.getTxLogRepository().updateToCommitted(this);
+		return log;
+	}
+	
+	public TXLogEntity updateTxLogRollbacked() {
+		TXLogEntity log = transactionAspect.getTxLogRepository().updateToRollbacked(this);
+		return log;
+	}
+	
+	/***
+	 * 是否全局事务
+	 * @author weishao zeng
+	 * @return
+	 */
+	public boolean isGlobalTX() {
+		return this.transactionType==TCCTransactionType.GLOBAL;
 	}
 	
 	/*public BranchTransactionalData addBranch(String confirmMethod, String cancelMethod) {

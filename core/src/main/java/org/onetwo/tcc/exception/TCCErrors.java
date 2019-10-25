@@ -1,4 +1,4 @@
-package org.onetwo.tcc.util;
+package org.onetwo.tcc.exception;
 
 import org.onetwo.common.exception.ErrorType;
 
@@ -10,7 +10,8 @@ import lombok.AllArgsConstructor;
  */
 @AllArgsConstructor
 public enum TCCErrors implements ErrorType {
-	ERR_ONLYONE_TCC_TRANSACTIONAL("Only one @TCCTransactional per transaction");
+	ERR_ONLYONE_TCC_TRANSACTIONAL("Only one @TCCTransactional per transaction"),
+	ERR_REMOTE("invoke remote error");
 	
 	private String message;
 

@@ -25,5 +25,9 @@ public class TCCException extends BaseException {
 		super(exceptionType);
 		this.code = DEFAULT_ERR_CODE;
 	}
+
+	public TCCException(ErrorType exceptionType, Throwable cause) {
+		super(exceptionType, cause);
+	}
 }
 
