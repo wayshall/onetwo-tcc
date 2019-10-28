@@ -4,8 +4,10 @@ import org.onetwo.tcc.entity.TXLogEntity;
 import org.onetwo.tcc.util.TCCTransactionType;
 import org.springframework.transaction.support.ResourceHolderSupport;
 
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Setter;
 
 /**
  * @author weishao zeng
@@ -25,6 +27,8 @@ public class TransactionResourceHolder extends ResourceHolderSupport {
 	private Object target;
 	private Object[] methodArgs;
 	private TCCTransactionType transactionType;
+	@Setter(value=AccessLevel.NONE)
+	private TXLogEntity txlog;
 	
 	
 //	private List<BranchTransactionalData> branchs = new ArrayList<>();
@@ -43,8 +47,8 @@ public class TransactionResourceHolder extends ResourceHolderSupport {
 	}
 	
 	public TXLogEntity createTxLog() {
-		TXLogEntity log = transactionAspect.getTxLogRepository().create(this);
-		return log;
+		txlog = transactionAspect.getTxLogRepository().create(this);
+		return txlog;
 	}
 	
 	public TXLogEntity updateTxLogCommitted() {

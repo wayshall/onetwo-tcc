@@ -16,6 +16,7 @@ import org.onetwo.tcc.util.TXStatus;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /**
  * @author weishao zeng
@@ -53,5 +54,12 @@ public class TXLogEntity extends BaseEntity {
 		String consumeMethod;
 		Object[] arguments;
 	}
+
+	@Override
+	public String toString() {
+		return "TXLogEntity [id=" + id + ", globalId=" + globalId + ", parentId=" + parentId + ", transactionType="
+				+ transactionType + ", status=" + status + ", dataVersion=" + dataVersion + "]";
+	}
+	
 }
 

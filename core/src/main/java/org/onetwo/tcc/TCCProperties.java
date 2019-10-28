@@ -13,7 +13,17 @@ import lombok.Data;
 @ConfigurationProperties(prefix=TCCProperties.PREFIX_KEY)
 @Data
 public class TCCProperties {
-	public static final String PREFIX_KEY = BootJFishConfig.PREFIX + "jfish.tcc";
+	
+	/***
+	 * jfish.tcc
+	 */
+	public static final String PREFIX_KEY = BootJFishConfig.PREFIX + ".tcc";
+	/***
+	 * jfish.tcc.topic.name
+	 */
+	public static final String TOPIC = "${" + PREFIX_KEY + ".rmq.topic.name:TCC}";
+	public static final String TAG_TXLOG = "${" + PREFIX_KEY + ".rmq.tags.txlog:TXLOG}";
+	public static final String CONSUMER_TXLOG = "${" + PREFIX_KEY + ".rmq.consumers:txlog-consumer}";
 
 	/***
 	 * 事务超时时间

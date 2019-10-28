@@ -1,5 +1,7 @@
 package org.onetwo.tcc.spi;
 
+import java.util.List;
+
 import org.onetwo.tcc.TransactionResourceHolder;
 import org.onetwo.tcc.entity.TXLogEntity;
 import org.springframework.transaction.annotation.Propagation;
@@ -33,5 +35,12 @@ public interface TXLogRepository {
 	@Transactional(propagation=Propagation.REQUIRES_NEW)
 	TXLogEntity updateToRollbacked(TransactionResourceHolder resourceHolder);
 
+	/****
+	 * 根据事务id查找所有相关事务
+	 * @author weishao zeng
+	 * @param txId
+	 * @return
+	 */
+	List<TXLogEntity> findListById(String txId);
 }
 
