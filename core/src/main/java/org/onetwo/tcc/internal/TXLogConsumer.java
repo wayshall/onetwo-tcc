@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * 动态消费组，每个服务一个
+ * 
  * @author weishao zeng
  * <br/>
  */

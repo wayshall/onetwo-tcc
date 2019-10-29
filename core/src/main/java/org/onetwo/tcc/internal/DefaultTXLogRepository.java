@@ -1,5 +1,7 @@
 package org.onetwo.tcc.internal;
 
+import java.util.List;
+
 import org.onetwo.common.db.spi.BaseEntityManager;
 import org.onetwo.dbm.exception.EntityVersionException;
 import org.onetwo.tcc.TransactionResourceHolder;
@@ -72,6 +74,26 @@ public class DefaultTXLogRepository implements TXLogRepository {
 			throw new TCCStatusChangedException(e)
 								.put("txlog", txlog);
 		}
+	}
+
+	@Override
+	public List<TXLogEntity> findListByGTXId(String txId) {
+		List<TXLogEntity> txlogs = baseEntityManager.from(TXLogEntity.class)
+													.where()
+														.field("globalId").is(txId)
+														.field("completed").is(false)
+													.toQuery()
+													.list();
+		return txlogs;
+	}
+
+	@Transactional(propagation=Propagation.MANDATORY)
+	@Override
+	public TXLogEntity updateToCompleted(TXLogEntity txlog) {
+		txlog.setCompleted(true); 
+		update(txlog);
+		messagePublisher.publishTXlogCompleted(txlog);
+		return txlog;
 	}
 
 }

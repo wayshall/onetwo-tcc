@@ -2,6 +2,7 @@ package org.onetwo.tcc.entity;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -16,7 +17,6 @@ import org.onetwo.tcc.util.TXStatus;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 /**
  * @author weishao zeng
@@ -34,6 +34,7 @@ public class TXLogEntity extends BaseEntity {
 
 	String globalId;
 	String parentId;
+	String serviceId;
 	
 	@Enumerated(EnumType.ORDINAL)
 	TCCTransactionType transactionType;
@@ -46,19 +47,32 @@ public class TXLogEntity extends BaseEntity {
 	@Version
 	Integer dataVersion;
 	
+	/***
+	 * 是否已完成
+	 */
+	@Column(name="is_completed")
+	boolean completed;
+	
 	@Data
 	public static class TXContentData implements Serializable {
 		String targetClass;
 		String tryMethod;
 		String confirmMethod;
-		String consumeMethod;
+		String cancelMethod;
 		Object[] arguments;
 	}
 
 	@Override
 	public String toString() {
-		return "TXLogEntity [id=" + id + ", globalId=" + globalId + ", parentId=" + parentId + ", transactionType="
+		return "TXLogEntity [id=" + id + ", globalId=" + globalId + ", serviceId=" + serviceId + ", transactionType="
 				+ transactionType + ", status=" + status + ", dataVersion=" + dataVersion + "]";
+	}
+	
+	public String logMessage(String message) {
+		StringBuilder log = new StringBuilder(200);
+		log.append("TXLog[").append(getGlobalId()).append("-").append(getId()).append("] ")
+			.append(message);
+		return log.toString();
 	}
 	
 }

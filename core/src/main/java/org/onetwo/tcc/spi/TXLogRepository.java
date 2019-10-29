@@ -41,6 +41,10 @@ public interface TXLogRepository {
 	 * @param txId
 	 * @return
 	 */
-	List<TXLogEntity> findListById(String txId);
+	List<TXLogEntity> findListByGTXId(String txId);
+	
+
+	@Transactional(propagation=Propagation.MANDATORY)
+	TXLogEntity updateToCompleted(TXLogEntity txlog);
 }
 
