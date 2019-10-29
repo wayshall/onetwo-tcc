@@ -1,4 +1,4 @@
-package org.onetwo.tcc.core;
+package org.onetwo.tcc.boot;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

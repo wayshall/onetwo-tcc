@@ -5,7 +5,7 @@ import org.onetwo.common.log.JFishLoggerFactory;
 import org.onetwo.ext.alimq.OnsMessage;
 import org.onetwo.ext.alimq.SimpleMessage;
 import org.onetwo.ext.ons.producer.ProducerService;
-import org.onetwo.tcc.core.TCCProperties;
+import org.onetwo.tcc.boot.TCCProperties;
 import org.onetwo.tcc.core.entity.TXLogEntity;
 import org.onetwo.tcc.core.internal.message.GTXLogMessage;
 import org.onetwo.tcc.core.spi.TXLogMessagePublisher;

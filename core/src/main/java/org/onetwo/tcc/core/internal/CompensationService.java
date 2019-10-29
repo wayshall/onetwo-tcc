@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import org.onetwo.boot.module.redis.RedisLockRunner;
 import org.onetwo.common.date.Dates;
 import org.onetwo.common.db.spi.BaseEntityManager;
-import org.onetwo.tcc.core.TCCProperties.CompensationProps;
+import org.onetwo.tcc.boot.TCCProperties.CompensationProps;
 import org.onetwo.tcc.core.entity.TXLogEntity;
 import org.onetwo.tcc.core.util.TXStatus;
 import org.springframework.beans.factory.annotation.Autowired;

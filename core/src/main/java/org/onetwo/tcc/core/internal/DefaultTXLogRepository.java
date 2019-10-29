@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.onetwo.common.db.spi.BaseEntityManager;
 import org.onetwo.dbm.exception.EntityVersionException;
-import org.onetwo.tcc.core.TCCProperties;
+import org.onetwo.tcc.boot.TCCProperties;
 import org.onetwo.tcc.core.entity.TXLogEntity;
 import org.onetwo.tcc.core.entity.TXLogEntity.TXContentData;
 import org.onetwo.tcc.core.exception.TCCStatusChangedException;

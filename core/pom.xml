@@ -19,6 +19,12 @@
   </properties>
 
   <dependencies>
+  
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-feign</artifactId>
+      <optional>true</optional>
+    </dependency>
     
     <dependency>
         <groupId>org.projectlombok</groupId>
@@ -38,6 +44,7 @@
      </dependency>
 
   </dependencies>
+  
   
   <build>
   	<plugins>

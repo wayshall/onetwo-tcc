@@ -14,7 +14,7 @@ import org.onetwo.common.interceptor.SimpleInterceptorManager;
 import org.onetwo.common.utils.LangUtils;
 import org.onetwo.common.utils.StringUtils;
 import org.onetwo.dbm.id.SnowflakeIdGenerator;
-import org.onetwo.tcc.core.TCCProperties;
+import org.onetwo.tcc.boot.TCCProperties;
 import org.onetwo.tcc.core.annotation.TCCTransactional;
 import org.onetwo.tcc.core.exception.TCCErrors;
 import org.onetwo.tcc.core.exception.TCCException;
