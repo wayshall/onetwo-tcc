@@ -4,6 +4,7 @@ package org.onetwo.tcc.core;
  * <br/>
  */
 
+import org.onetwo.common.interceptor.SimpleInterceptorManager;
 import org.onetwo.tcc.core.internal.DefaultLocalTransactionHandler;
 import org.onetwo.tcc.core.internal.DefaultRemoteTXContextLookupService;
 import org.onetwo.tcc.core.internal.DefaultTXLogMessagePublisher;
@@ -11,7 +12,8 @@ import org.onetwo.tcc.core.internal.DefaultTXLogRepository;
 import org.onetwo.tcc.core.internal.GTXLogConsumer;
 import org.onetwo.tcc.core.internal.TransactionAspect;
 import org.onetwo.tcc.core.spi.LocalTransactionHandler;
-import org.onetwo.tcc.core.spi.RemoteTXContextLookupService;
+import org.onetwo.tcc.core.spi.TCCTXContextLookupService;
+import org.onetwo.tcc.core.spi.TXInterceptor;
 import org.onetwo.tcc.core.spi.TXLogMessagePublisher;
 import org.onetwo.tcc.core.spi.TXLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,16 +29,22 @@ public class TCCConfiguration {
 	private TCCProperties tccProperties;
 	
 	@Bean
-	public RemoteTXContextLookupService globalTransactionIdLookupService() {
+	public TCCTXContextLookupService globalTransactionIdLookupService() {
 		return new DefaultRemoteTXContextLookupService();
 	}
 	
 	@Bean
-	public TransactionAspect transactionAspect(RemoteTXContextLookupService globalTransactionIdLookupService,
+	public TransactionAspect transactionAspect(TCCTXContextLookupService globalTransactionIdLookupService,
 			TXLogRepository txLogRepository) {
-		TransactionAspect transactionAspect = new TransactionAspect(globalTransactionIdLookupService, txLogRepository);
+		TransactionAspect transactionAspect = new TransactionAspect(tccInterceptorManager(), globalTransactionIdLookupService, txLogRepository);
 		transactionAspect.setRemoteExceptions(tccProperties.getRemoteExceptions());
 		return transactionAspect;
+	}
+	
+	@Bean
+	public SimpleInterceptorManager<TXInterceptor> tccInterceptorManager() {
+		SimpleInterceptorManager<TXInterceptor> manager = new SimpleInterceptorManager<>(TXInterceptor.class);
+		return manager;
 	}
 	
 	

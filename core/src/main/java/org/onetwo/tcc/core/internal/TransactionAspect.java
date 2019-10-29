@@ -9,6 +9,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.onetwo.common.interceptor.SimpleInterceptorChain;
+import org.onetwo.common.interceptor.SimpleInterceptorManager;
 import org.onetwo.common.utils.LangUtils;
 import org.onetwo.common.utils.StringUtils;
 import org.onetwo.dbm.id.SnowflakeIdGenerator;
@@ -17,8 +19,9 @@ import org.onetwo.tcc.core.annotation.TCCTransactional;
 import org.onetwo.tcc.core.exception.TCCErrors;
 import org.onetwo.tcc.core.exception.TCCException;
 import org.onetwo.tcc.core.exception.TCCRemoteException;
-import org.onetwo.tcc.core.spi.RemoteTXContextLookupService;
-import org.onetwo.tcc.core.spi.RemoteTXContextLookupService.TXContext;
+import org.onetwo.tcc.core.spi.TCCTXContextLookupService;
+import org.onetwo.tcc.core.spi.TCCTXContextLookupService.TXContext;
+import org.onetwo.tcc.core.spi.TXInterceptor;
 import org.onetwo.tcc.core.spi.TXLogRepository;
 import org.onetwo.tcc.core.util.TCCTransactionType;
 import org.springframework.aop.support.AopUtils;
@@ -41,7 +44,7 @@ public class TransactionAspect {
 		return (TransactionResourceHolder)TransactionSynchronizationManager.getResource(key);
 	}
 	
-	private RemoteTXContextLookupService txContextLookupService;
+	private TCCTXContextLookupService txContextLookupService;
 	@Getter
 	private TXLogRepository txLogRepository;
 	@Value(TCCProperties.SERVICE_ID)
@@ -51,16 +54,20 @@ public class TransactionAspect {
 	
     @Setter
 	private List<String> remoteExceptions = new ArrayList<String>();
+    private SimpleInterceptorManager<TXInterceptor> interceptorManager;
 
-	public TransactionAspect(RemoteTXContextLookupService txContextLookupService,
+	public TransactionAspect(SimpleInterceptorManager<TXInterceptor> interceptorManager, 
+			TCCTXContextLookupService txContextLookupService,
 			TXLogRepository txLogRepository) {
 		super();
+		this.interceptorManager = interceptorManager;
 		this.txContextLookupService = txContextLookupService;
 		this.txLogRepository = txLogRepository;
 	}
 	
-	
-	@Around("org.onetwo.tcc.TCCTransactionPointcut.tccTransactional()")
+
+	@Around("@annotation(org.onetwo.tcc.core.annotation.TCCTransactional)")
+//	@Pointcut("@annotation(org.onetwo.tcc.annotation.TCCTransactional)")
 	public Object startTransaction(ProceedingJoinPoint pjp) throws Throwable {
 		MethodSignature ms = (MethodSignature)pjp.getSignature();
 //		TransactionContext ctx = CURRENT_CONTEXTS.get();
@@ -110,7 +117,14 @@ public class TransactionAspect {
 		
 		Object result = null;;
 		try {
-			result = pjp.proceed();
+			SimpleInterceptorChain<TXInterceptor> interceptorChain = new SimpleInterceptorChain<>(pjp.getTarget(), 
+																								ms.getMethod(), 
+																								pjp.getArgs(), 
+																								interceptorManager.getInterceptors(), 
+																								() -> {
+																									return pjp.proceed();
+																								});
+			result = interceptorChain.invoke();
 		} catch (Throwable e) {
 			handleException(e);
 		}

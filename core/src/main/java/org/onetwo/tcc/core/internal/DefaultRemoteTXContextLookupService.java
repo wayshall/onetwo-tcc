@@ -3,13 +3,13 @@ package org.onetwo.tcc.core.internal;
 import java.util.Optional;
 
 import org.onetwo.common.web.utils.WebHolder;
-import org.onetwo.tcc.core.spi.RemoteTXContextLookupService;
+import org.onetwo.tcc.core.spi.TCCTXContextLookupService;
 
 /**
  * @author weishao zeng
  * <br/>
  */
-public class DefaultRemoteTXContextLookupService implements RemoteTXContextLookupService {
+public class DefaultRemoteTXContextLookupService implements TCCTXContextLookupService {
 	public static String HEADER_GTXID = "X-JFISH-TCC-GTXID";
 	public static String HEADER_PTXID = "X-JFISH-TCC-PTXID";
 

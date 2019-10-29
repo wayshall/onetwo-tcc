@@ -11,7 +11,7 @@ import lombok.Data;
  * @author weishao zeng
  * <br/>
  */
-public interface RemoteTXContextLookupService {
+public interface TCCTXContextLookupService {
 	
 	/****
 	 * find the global transaction id for current tcc transaction 

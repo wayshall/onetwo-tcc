@@ -3,7 +3,7 @@ package org.onetwo.tcc.core.internal;
 import java.lang.reflect.Method;
 
 import org.onetwo.tcc.core.entity.TXLogEntity;
-import org.onetwo.tcc.core.spi.RemoteTXContextLookupService.TXContext;
+import org.onetwo.tcc.core.spi.TCCTXContextLookupService.TXContext;
 import org.onetwo.tcc.core.util.TCCTransactionType;
 import org.onetwo.tcc.core.util.TCCUtils;
 import org.springframework.transaction.support.ResourceHolderSupport;
