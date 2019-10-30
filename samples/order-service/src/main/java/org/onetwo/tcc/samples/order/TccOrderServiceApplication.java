@@ -1,8 +1,6 @@
 package org.onetwo.tcc.samples.order;
 
 import org.onetwo.dbm.spring.EnableDbm;
-import org.onetwo.ext.ons.annotation.EnableONSClient;
-import org.onetwo.ext.ons.annotation.ONSProducer;
 import org.onetwo.tcc.boot.EnableTCC;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -20,9 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 @EnableDbm
 @EnableCaching
 @EnableAsync
-@EnableONSClient(producers={
-		@ONSProducer(producerId="order-common-produer")
-})
 @EnableTCC
 @EnableFeignClients
 public class TccOrderServiceApplication {

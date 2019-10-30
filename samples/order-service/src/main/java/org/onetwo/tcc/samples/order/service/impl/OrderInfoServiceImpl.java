@@ -28,7 +28,7 @@ public class OrderInfoServiceImpl {
     	order.setSkuId(request.getSkuId());
     	order.setSkuCount(request.getCount());
     	order.setStatus(OrderStatus.CREATED);
-    	order.setPrice(10.0D);
+    	order.setPrice(10.0D*request.getCount());
     	order.setTitle("测试订单");
 		baseEntityManager.persist(order);
 		

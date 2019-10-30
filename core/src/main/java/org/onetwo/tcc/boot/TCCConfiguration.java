@@ -5,6 +5,8 @@ package org.onetwo.tcc.boot;
  */
 
 import org.onetwo.common.interceptor.SimpleInterceptorManager;
+import org.onetwo.ext.ons.annotation.EnableONSClient;
+import org.onetwo.ext.ons.annotation.ONSProducer;
 import org.onetwo.tcc.core.internal.DefaultLocalTransactionHandler;
 import org.onetwo.tcc.core.internal.DefaultRemoteTXContextLookupService;
 import org.onetwo.tcc.core.internal.DefaultTXLogMessagePublisher;
@@ -23,6 +25,9 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableConfigurationProperties(TCCProperties.class)
+@EnableONSClient(producers={
+		@ONSProducer(producerId=TCCProperties.PRODUER_ID)
+})
 public class TCCConfiguration {
 	
 	@Autowired

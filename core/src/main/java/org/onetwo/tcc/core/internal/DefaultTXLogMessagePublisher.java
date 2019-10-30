@@ -2,6 +2,7 @@ package org.onetwo.tcc.core.internal;
 
 import org.onetwo.boot.mq.SendMessageFlags;
 import org.onetwo.common.log.JFishLoggerFactory;
+import org.onetwo.common.spring.SpringUtils;
 import org.onetwo.ext.alimq.OnsMessage;
 import org.onetwo.ext.alimq.SimpleMessage;
 import org.onetwo.ext.ons.producer.ProducerService;
@@ -11,16 +12,30 @@ import org.onetwo.tcc.core.internal.message.GTXLogMessage;
 import org.onetwo.tcc.core.spi.TXLogMessagePublisher;
 import org.onetwo.tcc.core.util.GTXActions;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.util.Assert;
 
 /**
  * @author weishao zeng
  * <br/>
  */
-public class DefaultTXLogMessagePublisher implements TXLogMessagePublisher {
+public class DefaultTXLogMessagePublisher implements TXLogMessagePublisher, InitializingBean {
 	private final Logger logger = JFishLoggerFactory.getLogger(TXLogMessagePublisher.class);
-	@Autowired
+//	@Autowired
 	private ProducerService producerService;
+	@Autowired
+	private ApplicationContext applicationContext;
+	@Value(TCCProperties.PRODUER_ID)
+	private String producerId;
+	
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		this.producerService = SpringUtils.getBean(applicationContext, producerId);
+		Assert.notNull(producerService, "producer not found: " + producerId);
+	}
 
 	@Override
 	public void publishGTXlogCommitted(TXLogEntity log) {
