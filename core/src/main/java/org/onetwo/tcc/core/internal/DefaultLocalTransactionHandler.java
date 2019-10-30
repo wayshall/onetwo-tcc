@@ -7,6 +7,7 @@ import java.util.Set;
 import org.onetwo.common.reflect.ReflectUtils;
 import org.onetwo.common.spring.SpringUtils;
 import org.onetwo.common.utils.LangUtils;
+import org.onetwo.common.utils.StringUtils;
 import org.onetwo.tcc.core.entity.TXLogEntity;
 import org.onetwo.tcc.core.entity.TXLogEntity.TXContentData;
 import org.onetwo.tcc.core.exception.TCCErrors;
@@ -15,6 +16,7 @@ import org.onetwo.tcc.core.internal.message.GTXLogMessage;
 import org.onetwo.tcc.core.spi.LocalTransactionHandler;
 import org.onetwo.tcc.core.spi.TXLogRepository;
 import org.onetwo.tcc.core.util.GTXActions;
+import org.onetwo.tcc.core.util.TCCTransactionType;
 import org.onetwo.tcc.core.util.TXStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -152,14 +154,23 @@ public class DefaultLocalTransactionHandler implements LocalTransactionHandler {
 		String methodName = null;
 		TXContentData data = txlog.getContent();
 		TCCErrors error = null;
+		String tag = null;
 		if (txAction==GTXActions.COMMIT) {
 			methodName = data.getConfirmMethod();
 			error = TCCErrors.ERR_TOO_MANY_CONFIRM;
+			tag = "confirm";
 		} else if (txAction==GTXActions.ROLLBACK) {
 			methodName = data.getCancelMethod();
 			error = TCCErrors.ERR_TOO_MANY_CANCEL;
+			tag = "cancel";
 		} else {
 			throw new UnsupportedOperationException("unknow tx actions: " + txAction);
+		}
+		if (StringUtils.isBlank(methodName) && txlog.getTransactionType()==TCCTransactionType.GLOBAL) {
+			if (log.isWarnEnabled()) {
+				log.warn(txlog.logMessage(" there is not {} method bound the global transacton!"), tag);
+			}
+			return ;
 		}
 		
 		Class<?> beanType = ReflectUtils.loadClass(data.getTargetClass());

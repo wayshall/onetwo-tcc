@@ -43,6 +43,9 @@
                 <module>core</module>
                 
                 <module>samples/parent</module>
+                <module>samples/api</module>
+                <module>samples/order-service</module>
+                <module>samples/product-service</module>
 			</modules>
            <build>
               <plugins>

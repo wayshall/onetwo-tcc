@@ -38,7 +38,7 @@ public class DefaultTXLogRepository implements TXLogRepository {
 		TXLogEntity txlog = buildTXLog(resourceHolder);
 		baseEntityManager.persist(txlog);
 		messagePublisher.publishTXlogCreated(txlog);
-		return null;
+		return txlog;
 	}
 	
 	protected TXLogEntity buildTXLog(TransactionResourceHolder resourceHolder) {

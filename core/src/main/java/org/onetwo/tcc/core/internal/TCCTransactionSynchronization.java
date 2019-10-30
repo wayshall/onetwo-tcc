@@ -1,5 +1,6 @@
 package org.onetwo.tcc.core.internal;
 
+import org.onetwo.tcc.core.util.TCCInvokeContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DataSourceUtils;
@@ -26,7 +27,7 @@ public class TCCTransactionSynchronization extends TransactionSynchronizationAda
 	 */
 	@Override
 	public void suspend() {
-		TransactionSynchronizationManager.unbindResource(resourceHolder.getTransactionAspect());
+		TransactionSynchronizationManager.unbindResource(TransactionAspect.CONTEXT_BIND_KEY);
 	}
 
 	/***
@@ -34,21 +35,25 @@ public class TCCTransactionSynchronization extends TransactionSynchronizationAda
 	 */
 	@Override
 	public void resume() {
-		TransactionSynchronizationManager.bindResource(resourceHolder.getTransactionAspect(), resourceHolder);
+		TransactionSynchronizationManager.bindResource(TransactionAspect.CONTEXT_BIND_KEY, resourceHolder);
 	}
 
 	@Override
 	public void beforeCommit(boolean readOnly) {
 		if(logger.isDebugEnabled()){
-			logger.debug("tcc transaction synchronization committing ");
+			logger.debug("tcc transaction synchronization committing!");
 		}
 		resourceHolder.updateTxLogCommitted();
 	}
 
 	@Override
 	public void afterCompletion(int status) {
-		if (status==TCCTransactionSynchronization.STATUS_COMMITTED) {
-		} else {
+		if(logger.isDebugEnabled()){
+			logger.debug("tcc transaction synchronization completed!");
+		}
+		TCCInvokeContext.remove();
+		TransactionSynchronizationManager.unbindResource(TransactionAspect.CONTEXT_BIND_KEY);
+		if (status==TCCTransactionSynchronization.STATUS_ROLLED_BACK) {
 			resourceHolder.updateTxLogRollbacked();
 		}
 	}

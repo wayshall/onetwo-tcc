@@ -12,7 +12,6 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.onetwo.common.interceptor.SimpleInterceptorChain;
 import org.onetwo.common.interceptor.SimpleInterceptorManager;
 import org.onetwo.common.utils.LangUtils;
-import org.onetwo.common.utils.StringUtils;
 import org.onetwo.dbm.id.SnowflakeIdGenerator;
 import org.onetwo.tcc.boot.TCCProperties;
 import org.onetwo.tcc.core.annotation.TCCTransactional;
@@ -23,6 +22,7 @@ import org.onetwo.tcc.core.spi.TCCTXContextLookupService;
 import org.onetwo.tcc.core.spi.TCCTXContextLookupService.TXContext;
 import org.onetwo.tcc.core.spi.TXInterceptor;
 import org.onetwo.tcc.core.spi.TXLogRepository;
+import org.onetwo.tcc.core.util.TCCInvokeContext;
 import org.onetwo.tcc.core.util.TCCTransactionType;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,9 +40,11 @@ import lombok.Setter;
 public class TransactionAspect {
 //	private static final NamedThreadLocal<TransactionContext> CURRENT_CONTEXTS = new NamedThreadLocal<>("dtx-transaction");
 
-	public static TransactionResourceHolder getCurrent(TransactionAspect key) {
+	/*public static TransactionResourceHolder getCurrent(TransactionAspect key) {
 		return (TransactionResourceHolder)TransactionSynchronizationManager.getResource(key);
-	}
+	}*/
+	
+	public static final Object CONTEXT_BIND_KEY = new Object();
 	
 	private TCCTXContextLookupService txContextLookupService;
 	@Getter
@@ -71,45 +73,17 @@ public class TransactionAspect {
 	public Object startTransaction(ProceedingJoinPoint pjp) throws Throwable {
 		MethodSignature ms = (MethodSignature)pjp.getSignature();
 //		TransactionContext ctx = CURRENT_CONTEXTS.get();
-		TransactionResourceHolder resource = (TransactionResourceHolder)TransactionSynchronizationManager.getResource(this);
-		TCCTransactional tccTransaction = null;
+		TransactionResourceHolder resource = (TransactionResourceHolder)TransactionSynchronizationManager.getResource(CONTEXT_BIND_KEY);
 		if (resource==null) {
-			Optional<TXContext> parentContext = txContextLookupService.findCurrent();
-			resource = new TransactionResourceHolder(this);
-			tccTransaction = AnnotationUtils.findAnnotation(ms.getMethod(), TCCTransactional.class);
-			resource.setTryMethod(ms.getMethod());
-			resource.setConfirmMethod(tccTransaction.confirmMethod());
-			resource.setCancelMethod(tccTransaction.cancelMethod());
-			resource.setTarget(pjp.getTarget());
-			resource.setMethodArgs(pjp.getArgs());
-			Class<?> targetClass = AopUtils.getTargetClass(pjp.getTarget());
-			resource.setTargetClass(targetClass);
-			resource.setSynchronizedWithTransaction(true);
-			resource.setServiceId(serviceId);
-			if (parentContext.isPresent()) {
-				resource.setTransactionType(TCCTransactionType.BRANCH);
-//				resource.setGid(ctx.get().getGid());
-//				resource.setParentId(ctx.get().getParentId());
-				resource.setParentContext(parentContext.get());
-				resource.setCurrentTxid("B" + nextId());
-			} else {
-				resource.setTransactionType(TCCTransactionType.GLOBAL);
-				resource.setCurrentTxid("G" + nextId());
-//				resource.setGid("G" + nextId());
-			}
+			resource = this.createTransactionResourceHolder(pjp);
 			resource.check();
 			
-			if (StringUtils.isBlank(resource.getConfirmMethod())) {
-				throw new TCCException("the confirmMethod of @" + TCCTransactional.class.getSimpleName() + " can not be blank!");
-			}
-			if (StringUtils.isBlank(resource.getCancelMethod())) {
-				throw new TCCException("the cancelMethod of @" + TCCTransactional.class.getSimpleName() + " can not be blank!");
-			}
-			
-			TransactionSynchronizationManager.bindResource(this, resource);
+			TransactionSynchronizationManager.bindResource(CONTEXT_BIND_KEY, resource);
 			TCCTransactionSynchronization synchronization = new TCCTransactionSynchronization(resource);
 			TransactionSynchronizationManager.registerSynchronization(synchronization);
 
+			TCCInvokeContext.set(resource);
+			
 			resource.createTxLog();
 		} else {
 			throw new TCCException(TCCErrors.ERR_ONLYONE_TCC_TRANSACTIONAL);
@@ -127,9 +101,42 @@ public class TransactionAspect {
 			result = interceptorChain.invoke();
 		} catch (Throwable e) {
 			handleException(e);
+		} finally {
 		}
 		
 		return result;
+	}
+	
+	protected TransactionResourceHolder createTransactionResourceHolder(ProceedingJoinPoint pjp) {
+		MethodSignature ms = (MethodSignature)pjp.getSignature();
+		Optional<TXContext> parentContext = txContextLookupService.findCurrent();
+		TransactionResourceHolder resource = new TransactionResourceHolder(this);
+		TCCTransactional tccTransaction = AnnotationUtils.findAnnotation(ms.getMethod(), TCCTransactional.class);
+		resource.setTryMethod(ms.getMethod());
+		resource.setConfirmMethod(tccTransaction.confirmMethod());
+		resource.setCancelMethod(tccTransaction.cancelMethod());
+		resource.setTarget(pjp.getTarget());
+		resource.setMethodArgs(pjp.getArgs());
+		Class<?> targetClass = AopUtils.getTargetClass(pjp.getTarget());
+		resource.setTargetClass(targetClass);
+		resource.setSynchronizedWithTransaction(true);
+		resource.setServiceId(serviceId);
+		if (parentContext.isPresent()) {
+			resource.setTransactionType(TCCTransactionType.BRANCH);
+//			resource.setGid(ctx.get().getGid());
+//			resource.setParentId(ctx.get().getParentId());
+			resource.setParentContext(parentContext.get());
+			resource.setCurrentTxid(nextId());
+		} else {
+			if (!tccTransaction.globalized()) {
+				throw new TCCException(TCCErrors.ERR_NOT_GLOBALIZED_METHOD);
+			}
+			resource.setTransactionType(TCCTransactionType.GLOBAL);
+			resource.setCurrentTxid(nextId());
+//			resource.setGid("G" + nextId());
+		}
+		
+		return resource;
 	}
 	
 	protected void handleException(Throwable e) throws Throwable {

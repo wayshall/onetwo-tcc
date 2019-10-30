@@ -5,8 +5,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
+import org.onetwo.tcc.core.internal.TransactionResourceHolder;
+import org.onetwo.tcc.core.util.TCCInvokeContext;
 
 import com.netflix.hystrix.HystrixThreadPoolKey;
 import com.netflix.hystrix.HystrixThreadPoolProperties;
@@ -25,15 +25,15 @@ import com.netflix.hystrix.strategy.properties.HystrixProperty;
  * @author wayshall
  * <br/>
  */
-public class SpringRequestContextConcurrencyStrategy extends HystrixConcurrencyStrategy {
+public class TCCInvokeContextConcurrencyStrategy extends HystrixConcurrencyStrategy {
 
 	private HystrixConcurrencyStrategy existingConcurrencyStrategy;
 
-	public SpringRequestContextConcurrencyStrategy() {
+	public TCCInvokeContextConcurrencyStrategy() {
 		this(HystrixPlugins.getInstance().getConcurrencyStrategy());
 	}
 	
-	public SpringRequestContextConcurrencyStrategy(HystrixConcurrencyStrategy existingConcurrencyStrategy) {
+	public TCCInvokeContextConcurrencyStrategy(HystrixConcurrencyStrategy existingConcurrencyStrategy) {
 		if (getClass().isInstance(existingConcurrencyStrategy)) {
 			System.out.println("Welcome to singleton hell...");
 			return;
@@ -104,31 +104,37 @@ public class SpringRequestContextConcurrencyStrategy extends HystrixConcurrencyS
 	}
 	
 	protected <V> Callable<V> createDelegatingContextCallable(Callable<V> callable) {
-		return new SpringRequestContextCallable<>(callable);
+		return new TCCInvokeContextCallable<>(callable);
 	}
 	
-	class SpringRequestContextCallable<T> implements Callable<T> {
+	class TCCInvokeContextCallable<T> implements Callable<T> {
 		private Callable<T> delegate;
-		private RequestAttributes requestAttributes;
+//		private RequestAttributes requestAttributes;
+		private TransactionResourceHolder resourceHolder;
 		
-		public SpringRequestContextCallable(Callable<T> callable) {
+		public TCCInvokeContextCallable(Callable<T> callable) {
 			this.delegate = callable;
-			this.requestAttributes = RequestContextHolder.getRequestAttributes();
+//			this.requestAttributes = RequestContextHolder.getRequestAttributes();
+			this.resourceHolder = TCCInvokeContext.get();
 		}
 
 		@Override
 		public T call() throws Exception {
-			RequestAttributes existRequestAttributes = RequestContextHolder.getRequestAttributes();
-			boolean needToSetContext = requestAttributes!=null && !requestAttributes.equals(existRequestAttributes);
+			TransactionResourceHolder existResourceHolder = TCCInvokeContext.get();
+			
+/*			RequestAttributes existRequestAttributes = RequestContextHolder.getRequestAttributes();
+			boolean needToSetContext = requestAttributes!=null && !requestAttributes.equals(existRequestAttributes);*/
 			try {
-				if (needToSetContext) {
+				TCCInvokeContext.set(resourceHolder);
+				/*if (needToSetContext) {
 					RequestContextHolder.setRequestAttributes(requestAttributes);
-				}
+				}*/
 				return this.delegate.call();
 			} finally {
-				if (needToSetContext){
+				/*if (needToSetContext){
 					RequestContextHolder.setRequestAttributes(existRequestAttributes);
-				}
+				}*/
+				TCCInvokeContext.set(existResourceHolder);
 			}
 		}
 		

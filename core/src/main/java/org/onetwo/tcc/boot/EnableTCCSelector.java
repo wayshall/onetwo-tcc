@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.onetwo.common.spring.context.AbstractImportSelector;
+import org.onetwo.tcc.feign.FeignTCCConfiguration;
+import org.onetwo.tcc.hystrix.TCCInvokeContextConfiguration;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 
@@ -18,6 +20,8 @@ public class EnableTCCSelector extends AbstractImportSelector<EnableTCC>{
 		List<String> classNames = new ArrayList<String>();
 
 		classNames.add(TCCConfiguration.class.getName());
+		classNames.add(FeignTCCConfiguration.class.getName());
+		classNames.add(TCCInvokeContextConfiguration.class.getName());
 		
 		return classNames;
 	}

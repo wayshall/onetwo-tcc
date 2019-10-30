@@ -2,6 +2,7 @@ package org.onetwo.tcc.core.internal;
 
 import java.util.Optional;
 
+import org.onetwo.common.utils.StringUtils;
 import org.onetwo.common.web.utils.WebHolder;
 import org.onetwo.tcc.core.spi.TCCTXContextLookupService;
 
@@ -18,11 +19,14 @@ public class DefaultRemoteTXContextLookupService implements TCCTXContextLookupSe
 		return WebHolder.getSpringContextHolderRequest().map(request -> {
 			String gid = request.getHeader(HEADER_GTXID);
 			String pid = request.getHeader(HEADER_PTXID);
+			if (StringUtils.isBlank(gid) || StringUtils.isBlank(pid)) {
+				return null;
+			}
 			TXContext ctx = new TXContext();
 			ctx.setGtxId(gid);
 			ctx.setParentTxId(pid);
 			return ctx;
-		});
+		}).filter(ctx -> ctx!=null);
 	}
 
 }
