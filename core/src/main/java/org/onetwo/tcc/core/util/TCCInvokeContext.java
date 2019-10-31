@@ -13,10 +13,7 @@ public class TCCInvokeContext {
 //	private static final NamedThreadLocal<TransactionResourceHolder> CONTEXTS = new NamedThreadLocal<>("tcc-invoke-context");
 	
 	public static void set(TransactionResourceHolder context) {
-		if (context==null) {
-//			CONTEXTS.remove();
-			remove();
-		} else {
+		if (context!=null) {
 //			CONTEXTS.set(context);
 			TransactionSynchronizationManager.bindResource(CONTEXT_BIND_KEY, context);
 		}

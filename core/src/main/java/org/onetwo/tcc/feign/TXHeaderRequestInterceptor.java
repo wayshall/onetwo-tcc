@@ -1,6 +1,7 @@
 package org.onetwo.tcc.feign;
 
 import org.onetwo.tcc.core.internal.DefaultRemoteTXContextLookupService;
+import org.onetwo.tcc.core.internal.TransactionResourceHolder;
 import org.onetwo.tcc.core.util.TCCInvokeContext;
 
 import feign.RequestInterceptor;
@@ -22,18 +23,14 @@ public class TXHeaderRequestInterceptor implements RequestInterceptor {
 			throw new TCCException(TCCErrors.ERR_WEB_REQUEST_NOT_FOUND);
 		}*/
 //		HttpServletRequest request = attrs.getRequest();
-		template.header(DefaultRemoteTXContextLookupService.HEADER_GTXID, TCCInvokeContext.get().getGtxId());
-		template.header(DefaultRemoteTXContextLookupService.HEADER_PTXID, TCCInvokeContext.get().getCurrentTxid());
-		if(log.isDebugEnabled()){
-			log.debug("set tcc header feign request, gid:{}, pid:{}", TCCInvokeContext.get().getGtxId(), TCCInvokeContext.get().getCurrentTxid());
-		}
-		/*txHeaders.stream().forEach(header -> {
-			String value = request.getHeader(header);
-			template.header(header, value);
+		TransactionResourceHolder resource = TCCInvokeContext.get();
+		if (resource!=null) {
+			template.header(DefaultRemoteTXContextLookupService.HEADER_GTXID, resource.getGtxId());
+			template.header(DefaultRemoteTXContextLookupService.HEADER_PTXID, resource.getCurrentTxid());
 			if(log.isDebugEnabled()){
-				log.debug("set tcc header[{} : {}] to feign request...", header, value);
+				log.debug("set tcc header feign request, gid:{}, pid:{}", resource.getGtxId(), resource.getCurrentTxid());
 			}
-		});*/
+		}
 	}
 
 	
