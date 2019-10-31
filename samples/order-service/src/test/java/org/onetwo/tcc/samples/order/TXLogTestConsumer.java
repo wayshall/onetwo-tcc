@@ -24,7 +24,7 @@ public class TXLogTestConsumer {
 
 //	public Map<Long, CountDownLatch> latchMap = Maps.newConcurrentMap();
 	public static MultiValuedMap<String, TXLogMessage> txlogMessageMap = MultiMapUtils.newListValuedHashMap();
-	volatile public static List<TXLogMessage> txLogMessageList = new ArrayList<>();
+	volatile private static List<TXLogMessage> txLogMessageList = new ArrayList<>();
 	
 	@ONSSubscribe(topic=TCCProperties.TOPIC, 
 				tags=TCCProperties.TAG_TXLOG, 
@@ -32,6 +32,10 @@ public class TXLogTestConsumer {
 	public void consumeTXLog(ConsumContext context, TXLogMessage txlogMessage) {
 		txlogMessageMap.put(txlogMessage.getGlobalId(), txlogMessage);
 		txLogMessageList.add(txlogMessage);
+	}
+	
+	static public List<TXLogMessage> getTXLogMessageList() {
+		return new ArrayList<>(txLogMessageList);
 	}
 	
 }
