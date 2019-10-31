@@ -12,6 +12,7 @@ import org.onetwo.tcc.core.internal.DefaultRemoteTXContextLookupService;
 import org.onetwo.tcc.core.internal.DefaultTXLogMessagePublisher;
 import org.onetwo.tcc.core.internal.DefaultTXLogRepository;
 import org.onetwo.tcc.core.internal.GTXLogConsumer;
+import org.onetwo.tcc.core.internal.TCCMethodsManager;
 import org.onetwo.tcc.core.internal.TransactionAspect;
 import org.onetwo.tcc.core.spi.LocalTransactionHandler;
 import org.onetwo.tcc.core.spi.TCCTXContextLookupService;
@@ -50,6 +51,11 @@ public class TCCConfiguration {
 	public SimpleInterceptorManager<TXInterceptor> tccInterceptorManager() {
 		SimpleInterceptorManager<TXInterceptor> manager = new SimpleInterceptorManager<>(TXInterceptor.class);
 		return manager;
+	}
+	
+	@Bean
+	public TCCMethodsManager tccMethodsManager() {
+		return new TCCMethodsManager();
 	}
 	
 	

@@ -26,7 +26,7 @@ public class OrderController implements DateInitBinder {
     public CreateOrderResponse create(@RequestBody CreateOrderRequest request){
     	OrderInfoEntity order = this.orderInfoService.save(request);
     	return CreateOrderResponse.builder()
-    							.id(order.getId())
+    							.id(order.getId().toString())
     							.build();
     }
 }

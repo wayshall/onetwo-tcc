@@ -13,7 +13,6 @@ import org.onetwo.common.interceptor.SimpleInterceptorManager;
 import org.onetwo.common.utils.LangUtils;
 import org.onetwo.dbm.id.SnowflakeIdGenerator;
 import org.onetwo.tcc.boot.TCCProperties;
-import org.onetwo.tcc.core.annotation.TCCTransactional;
 import org.onetwo.tcc.core.exception.TCCErrors;
 import org.onetwo.tcc.core.exception.TCCException;
 import org.onetwo.tcc.core.exception.TCCRemoteException;
@@ -24,9 +23,10 @@ import org.onetwo.tcc.core.spi.TXInterceptor.TXInterceptorChain;
 import org.onetwo.tcc.core.spi.TXLogRepository;
 import org.onetwo.tcc.core.util.TCCInvokeContext;
 import org.onetwo.tcc.core.util.TCCTransactionType;
+import org.onetwo.tcc.core.util.TCCTransactionalMeta;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import lombok.Getter;
@@ -50,6 +50,8 @@ public class TransactionAspect {
     @Setter
 	private List<String> remoteExceptions = new ArrayList<String>();
     private SimpleInterceptorManager<TXInterceptor> interceptorManager;
+    @Autowired
+    private TCCMethodsManager tccMethodsManager;
 
 	public TransactionAspect(SimpleInterceptorManager<TXInterceptor> interceptorManager, 
 			TCCTXContextLookupService txContextLookupService,
@@ -101,17 +103,23 @@ public class TransactionAspect {
 	}
 	
 	protected TransactionResourceHolder createTransactionResourceHolder(ProceedingJoinPoint pjp) {
+		Class<?> targetClass = AopUtils.getTargetClass(pjp.getTarget());
 		MethodSignature ms = (MethodSignature)pjp.getSignature();
 		Optional<TXContext> parentContext = txContextLookupService.findCurrent();
 		TransactionResourceHolder resource = new TransactionResourceHolder(this);
-		TCCTransactional tccTransaction = AnnotationUtils.findAnnotation(ms.getMethod(), TCCTransactional.class);
-		resource.setTryMethod(ms.getMethod());
+//		TCCTransactional tccTransaction = AnnotationUtils.findAnnotation(ms.getMethod(), TCCTransactional.class);
+//		Optional<TCCTransactionalMeta> tccMeta = TCCUtils.findTCCTransactionalMeta(targetClass, ms.getMethod());
+		TCCTransactionalMeta tccMeta = tccMethodsManager.getMeta(targetClass, ms.getMethod());
+		/*if (!tccMeta.isPresent()) {
+			throw new TCCException("@" + TCCTransactional.class+" not found on method: " + ms.getMethod());
+		}*/
+		/*resource.setTryMethod(ms.getMethod());
 		resource.setConfirmMethod(tccTransaction.confirmMethod());
 		resource.setCancelMethod(tccTransaction.cancelMethod());
+		resource.setTargetClass(targetClass);*/
+		resource.setTccMeta(tccMeta);
 		resource.setTarget(pjp.getTarget());
 		resource.setMethodArgs(pjp.getArgs());
-		Class<?> targetClass = AopUtils.getTargetClass(pjp.getTarget());
-		resource.setTargetClass(targetClass);
 		resource.setSynchronizedWithTransaction(true);
 		resource.setServiceId(serviceId);
 		if (parentContext.isPresent()) {
@@ -121,7 +129,7 @@ public class TransactionAspect {
 			resource.setParentContext(parentContext.get());
 			resource.setCurrentTxid(nextId());
 		} else {
-			if (!tccTransaction.globalized()) {
+			if (!tccMeta.isGlobalized()) {
 				throw new TCCException(TCCErrors.ERR_NOT_GLOBALIZED_METHOD);
 			}
 			resource.setTransactionType(TCCTransactionType.GLOBAL);

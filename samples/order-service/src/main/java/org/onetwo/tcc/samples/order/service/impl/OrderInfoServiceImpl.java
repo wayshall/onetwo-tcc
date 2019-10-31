@@ -2,6 +2,7 @@
 package org.onetwo.tcc.samples.order.service.impl;
 
 import org.onetwo.common.db.spi.BaseEntityManager;
+import org.onetwo.tcc.core.annotation.TCCService;
 import org.onetwo.tcc.core.annotation.TCCTransactional;
 import org.onetwo.tcc.samples.api.SkuApi.ReduceStockRequest;
 import org.onetwo.tcc.samples.order.client.SkuClient;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@TCCService
 public class OrderInfoServiceImpl {
 
     @Autowired

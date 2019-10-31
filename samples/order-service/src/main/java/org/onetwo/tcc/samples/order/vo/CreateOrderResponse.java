@@ -13,7 +13,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class CreateOrderResponse {
 	
-	Long id;
+	String id;
 
 }
 

@@ -2,11 +2,10 @@ package org.onetwo.tcc.core.internal;
 
 import java.lang.reflect.Method;
 
-import org.onetwo.common.utils.StringUtils;
 import org.onetwo.tcc.core.entity.TXLogEntity;
-import org.onetwo.tcc.core.exception.TCCException;
 import org.onetwo.tcc.core.spi.TCCTXContextLookupService.TXContext;
 import org.onetwo.tcc.core.util.TCCTransactionType;
+import org.onetwo.tcc.core.util.TCCTransactionalMeta;
 import org.onetwo.tcc.core.util.TCCUtils;
 import org.springframework.transaction.support.ResourceHolderSupport;
 
@@ -30,10 +29,11 @@ public class TransactionResourceHolder extends ResourceHolderSupport {
 	private String currentTxid;
 	private String serviceId;
 	
-	private Class<?> targetClass;
+	/*private Class<?> targetClass;
 	private Method tryMethod;
 	private String confirmMethod;
-	private String cancelMethod;
+	private String cancelMethod;*/
+	private TCCTransactionalMeta tccMeta;
 	private Object target;
 	private Object[] methodArgs;
 	private TCCTransactionType transactionType;
@@ -74,7 +74,8 @@ public class TransactionResourceHolder extends ResourceHolderSupport {
 	 * @author weishao zeng
 	 */
 	public void check() {
-		if (StringUtils.isBlank(confirmMethod)) {
+		TCCUtils.checkTccMethods(tccMeta, isGlobalTX());
+		/*if (StringUtils.isBlank(confirmMethod)) {
 			if (!isGlobalTX()) {
 				throw new TCCException("current tcc method is a branch transaction, the confirmMethod of [" + tryMethod + "] can not be blank!");
 			}
@@ -87,9 +88,8 @@ public class TransactionResourceHolder extends ResourceHolderSupport {
 			}
 		} else {
 			TCCUtils.checkAndSelectMethod(targetClass, cancelMethod, tryMethod);
-		}
+		}*/
 		// check consumer method exists
-		
 	}
 	
 	
@@ -116,6 +116,24 @@ public class TransactionResourceHolder extends ResourceHolderSupport {
 	public boolean isGlobalTX() {
 		return this.transactionType==TCCTransactionType.GLOBAL;
 	}
+
+	public Class<?> getTargetClass() {
+		return tccMeta.getTargetClass();
+	}
+
+	public Method getTryMethod() {
+		return tccMeta.getTryMethod();
+	}
+
+	public String getConfirmMethod() {
+		return tccMeta.getConfirmMethod();
+	}
+
+	public String getCancelMethod() {
+		return tccMeta.getCancelMethod();
+	}
+	
+	
 	
 	/*public BranchTransactionalData addBranch(String confirmMethod, String cancelMethod) {
 		BranchTransactionalData branch = BranchTransactionalData.builder()
