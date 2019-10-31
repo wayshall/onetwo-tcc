@@ -1,7 +1,5 @@
 package org.onetwo.tcc.core.entity;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -53,15 +51,6 @@ public class TXLogEntity extends BaseEntity {
 	@Column(name="is_completed")
 	boolean completed;
 	
-	@Data
-	public static class TXContentData implements Serializable {
-		String targetClass;
-		String tryMethod;
-		String confirmMethod;
-		String cancelMethod;
-		Object[] arguments;
-	}
-
 	@Override
 	public String toString() {
 		return "TXLogEntity [id=" + id + ", globalId=" + globalId + ", serviceId=" + serviceId + ", transactionType="

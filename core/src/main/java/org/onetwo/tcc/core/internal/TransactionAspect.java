@@ -9,7 +9,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.onetwo.common.interceptor.SimpleInterceptorChain;
 import org.onetwo.common.interceptor.SimpleInterceptorManager;
 import org.onetwo.common.utils.LangUtils;
 import org.onetwo.dbm.id.SnowflakeIdGenerator;
@@ -21,6 +20,7 @@ import org.onetwo.tcc.core.exception.TCCRemoteException;
 import org.onetwo.tcc.core.spi.TCCTXContextLookupService;
 import org.onetwo.tcc.core.spi.TCCTXContextLookupService.TXContext;
 import org.onetwo.tcc.core.spi.TXInterceptor;
+import org.onetwo.tcc.core.spi.TXInterceptor.TXInterceptorChain;
 import org.onetwo.tcc.core.spi.TXLogRepository;
 import org.onetwo.tcc.core.util.TCCInvokeContext;
 import org.onetwo.tcc.core.util.TCCTransactionType;
@@ -38,13 +38,6 @@ import lombok.Setter;
  */
 @Aspect
 public class TransactionAspect {
-//	private static final NamedThreadLocal<TransactionContext> CURRENT_CONTEXTS = new NamedThreadLocal<>("dtx-transaction");
-
-	/*public static TransactionResourceHolder getCurrent(TransactionAspect key) {
-		return (TransactionResourceHolder)TransactionSynchronizationManager.getResource(key);
-	}*/
-	
-	public static final Object CONTEXT_BIND_KEY = new Object();
 	
 	private TCCTXContextLookupService txContextLookupService;
 	@Getter
@@ -73,17 +66,16 @@ public class TransactionAspect {
 	public Object startTransaction(ProceedingJoinPoint pjp) throws Throwable {
 		MethodSignature ms = (MethodSignature)pjp.getSignature();
 //		TransactionContext ctx = CURRENT_CONTEXTS.get();
-		TransactionResourceHolder resource = (TransactionResourceHolder)TransactionSynchronizationManager.getResource(CONTEXT_BIND_KEY);
+		TransactionResourceHolder resource = TCCInvokeContext.get(); // (TransactionResourceHolder)TransactionSynchronizationManager.getResource(CONTEXT_BIND_KEY);
 		if (resource==null) {
 			resource = this.createTransactionResourceHolder(pjp);
 			resource.check();
 			
-			TransactionSynchronizationManager.bindResource(CONTEXT_BIND_KEY, resource);
+//			TransactionSynchronizationManager.bindResource(CONTEXT_BIND_KEY, resource);
+			TCCInvokeContext.set(resource);
 			TCCTransactionSynchronization synchronization = new TCCTransactionSynchronization(resource);
 			TransactionSynchronizationManager.registerSynchronization(synchronization);
 
-			TCCInvokeContext.set(resource);
-			
 			resource.createTxLog();
 		} else {
 			throw new TCCException(TCCErrors.ERR_ONLYONE_TCC_TRANSACTIONAL);
@@ -91,13 +83,14 @@ public class TransactionAspect {
 		
 		Object result = null;;
 		try {
-			SimpleInterceptorChain<TXInterceptor> interceptorChain = new SimpleInterceptorChain<>(pjp.getTarget(), 
-																								ms.getMethod(), 
-																								pjp.getArgs(), 
-																								interceptorManager.getInterceptors(), 
-																								() -> {
-																									return pjp.proceed();
-																								});
+			TXInterceptorChain interceptorChain = new TXInterceptorChain(resource, 
+																		pjp.getTarget(), 
+																		ms.getMethod(), 
+																		pjp.getArgs(), 
+																		interceptorManager.getInterceptors(), 
+																		() -> {
+																			return pjp.proceed();
+																		});
 			result = interceptorChain.invoke();
 		} catch (Throwable e) {
 			handleException(e);

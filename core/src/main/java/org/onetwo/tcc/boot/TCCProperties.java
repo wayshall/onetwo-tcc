@@ -37,7 +37,7 @@ public class TCCProperties {
 	 */
 	public static final String CONSUMER_GTXLOG = "${" + PREFIX_KEY + ".rmq.consumer.gtxlog:GTXLOG-${spring.application.name}}";
 	public static final String TAG_GTXLOG = "${" + PREFIX_KEY + ".rmq.tags.gtxlog:GTXLOG}";
-//	public static final String TAG_TXLOG = "${" + PREFIX_KEY + ".rmq.tags.txlog:TXLOG}";
+	public static final String TAG_TXLOG = "${" + PREFIX_KEY + ".rmq.tags.txlog:TXLOG}";
 //	public static final String CONSUMER_TXLOG = "${" + PREFIX_KEY + ".rmq.consumers:txlog-consumer}";
 
 	/***

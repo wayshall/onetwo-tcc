@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 public class TCCTransactionSynchronization extends TransactionSynchronizationAdapter {
 	
@@ -27,7 +26,7 @@ public class TCCTransactionSynchronization extends TransactionSynchronizationAda
 	 */
 	@Override
 	public void suspend() {
-		TransactionSynchronizationManager.unbindResource(TransactionAspect.CONTEXT_BIND_KEY);
+		TCCInvokeContext.remove();
 	}
 
 	/***
@@ -35,7 +34,7 @@ public class TCCTransactionSynchronization extends TransactionSynchronizationAda
 	 */
 	@Override
 	public void resume() {
-		TransactionSynchronizationManager.bindResource(TransactionAspect.CONTEXT_BIND_KEY, resourceHolder);
+		TCCInvokeContext.set(resourceHolder);
 	}
 
 	@Override
@@ -52,7 +51,6 @@ public class TCCTransactionSynchronization extends TransactionSynchronizationAda
 			logger.debug("tcc transaction synchronization completed!");
 		}
 		TCCInvokeContext.remove();
-		TransactionSynchronizationManager.unbindResource(TransactionAspect.CONTEXT_BIND_KEY);
 		if (status==TCCTransactionSynchronization.STATUS_ROLLED_BACK) {
 			resourceHolder.updateTxLogRollbacked();
 		}

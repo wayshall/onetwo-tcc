@@ -18,20 +18,20 @@ public class SkuServiceImpl {
     
     @TCCTransactional(globalized=false, confirmMethod="confirmStock", cancelMethod="cancelStock")
     public void reduceStock(ReduceStockRequest request) {
-    	SkuEntity sku = baseEntityManager.load(SkuEntity.class, request.getSkuId());
+    	SkuEntity sku = baseEntityManager.lockWrite(SkuEntity.class, request.getSkuId());
     	sku.setFrozenStockCount(sku.getFrozenStockCount()+request.getStockCount());
     	baseEntityManager.update(sku);
 	}
 
-    public void confirmStock(ReduceStockRequest request) {
-    	SkuEntity sku = baseEntityManager.load(SkuEntity.class, request.getSkuId());
+    public void confirmStock(int request) {
+    	/*SkuEntity sku = baseEntityManager.lockWrite(SkuEntity.class, request.getSkuId());
     	sku.setStockCount(sku.getStockCount()-request.getStockCount());
     	sku.setFrozenStockCount(sku.getFrozenStockCount()-request.getStockCount());
-    	baseEntityManager.update(sku);
+    	baseEntityManager.update(sku);*/
 	}
 
     public void cancelStock(ReduceStockRequest request) {
-    	SkuEntity sku = baseEntityManager.load(SkuEntity.class, request.getSkuId());
+    	SkuEntity sku = baseEntityManager.lockWrite(SkuEntity.class, request.getSkuId());
     	sku.setFrozenStockCount(sku.getFrozenStockCount()-request.getStockCount());
     	baseEntityManager.update(sku);
 	}

@@ -2,7 +2,6 @@
 package org.onetwo.tcc.samples.order.service.impl;
 
 import org.onetwo.common.db.spi.BaseEntityManager;
-import org.onetwo.common.exception.ServiceException;
 import org.onetwo.tcc.core.annotation.TCCTransactional;
 import org.onetwo.tcc.samples.api.SkuApi.ReduceStockRequest;
 import org.onetwo.tcc.samples.order.client.SkuClient;
@@ -36,10 +35,6 @@ public class OrderInfoServiceImpl {
 		stockRequest.setSkuId(request.getSkuId());
 		stockRequest.setStockCount(request.getCount());
 		skuClient.reduceStock(stockRequest);
-		
-		if (true) {
-			throw new ServiceException("test error");
-		}
 		
 		return order;
 	}
