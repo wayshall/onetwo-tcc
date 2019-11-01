@@ -10,9 +10,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.onetwo.common.exception.ServiceException;
 import org.onetwo.common.utils.LangUtils;
+import org.onetwo.dbm.id.SnowflakeIdGenerator;
 import org.onetwo.tcc.core.internal.message.TXLogMessage;
 import org.onetwo.tcc.core.util.TXStatus;
 import org.onetwo.tcc.samples.api.SkuApi.SkuVO;
@@ -27,10 +29,18 @@ public class TccOrderServiceITest extends TccOrderBaseApplicationUTests {
 
     @Autowired
     private SkuClient skuClient;
+    @Autowired
+    private ErrorOnRollbackListenner errorOnRollbackListenner;
+    private SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator(1);
+    public static Long skuId;
+    
+    @Before
+    public void setup() {
+		skuId = idGenerator.nextId();
+    }
     
 	@Test
 	public void testCreateOrderSuccess() throws Exception {
-		Long skuId = 1L;
 		SkuVO createSku = new SkuVO();
 		createSku.setStockCount(100);
 		createSku.setId(skuId);
@@ -45,7 +55,7 @@ public class TccOrderServiceITest extends TccOrderBaseApplicationUTests {
 //		CreateOrderResponse res = jsonMapper.fromJson(json, CreateOrderResponse.class);
 		
 		TXLogMessage skuLog = null;
-		while((skuLog = findSkuServiceTXLog())==null) {
+		while((skuLog = findSkuServiceTXLog(skuId))==null) {
 			LangUtils.await(1);
 			System.out.println("wait 1 seconds...");
 		}
@@ -76,7 +86,7 @@ public class TccOrderServiceITest extends TccOrderBaseApplicationUTests {
 //		CreateOrderResponse res = jsonMapper.fromJson(json, CreateOrderResponse.class);
 		
 		TXLogMessage skuLog = null;
-		while((skuLog = findSkuServiceTXLog())==null) {
+		while((skuLog = findSkuServiceTXLog(skuId))==null) {
 			LangUtils.await(1);
 			System.out.println("wait 1 seconds...");
 		}
@@ -87,10 +97,51 @@ public class TccOrderServiceITest extends TccOrderBaseApplicationUTests {
 		assertThat(sku.getStockCount()).isEqualTo(createSku.getStockCount());
 	}
 	
-	private TXLogMessage findSkuServiceTXLog() {
+	/****
+	 * 测试标记回滚的时候发生异常时，补偿服务是否正确运行
+	 * @author weishao zeng
+	 * @throws Exception
+	 */
+	@Test
+	public void testFailAfterReduceStockAndErrorOnRollback() throws Exception {
+		Long skuId = 1L;
+		SkuVO createSku = new SkuVO();
+		createSku.setStockCount(100);
+		createSku.setId(skuId);
+		createSku.setName("韭菜");
+		skuClient.cleanAndCreateSku(createSku);
+		
+		CreateOrderRequest request = new CreateOrderRequest();
+		request.setSkuId(skuId);
+		request.setCount(1);
+		
+		this.errorOnRollbackListenner.enabled = true;
+		assertThatThrownBy(() -> {
+			String json = createOrder("/order/failAfterReduceStock", request);
+			System.out.println("json: " + json);
+		}).hasRootCauseInstanceOf(ServiceException.class);
+//		CreateOrderResponse res = jsonMapper.fromJson(json, CreateOrderResponse.class);
+
+		this.errorOnRollbackListenner.enabled = false;
+		TXLogMessage skuLog = null;
+		int waitCount = 1;
+		while((skuLog = findSkuServiceTXLog(skuId))==null) {
+			LangUtils.await(1);
+			System.out.println("testFailAfterReduceStockAndErrorOnRollback wait "+waitCount+" seconds...");
+			waitCount++;
+		}
+		assertThat(skuLog.getStatus()).isEqualTo(TXStatus.CANCELED);
+		SkuVO sku = skuClient.get(createSku.getId());
+		assertThat(sku).isNotNull();
+		assertThat(sku.getFrozenStockCount()).isEqualTo(0);
+		assertThat(sku.getStockCount()).isEqualTo(createSku.getStockCount());
+		
+	}
+	
+	private TXLogMessage findSkuServiceTXLog(Long skuId) {
 		TXLogMessage txlog = TXLogTestConsumer.getTXLogMessageList().stream().filter(log -> {
 			return log.getServiceId().equals("tcc-product-service") && 
-					log.isCompleted() && log.getGlobalId().equals(OrderTestTXInterceptor.gtxid);
+					log.isCompleted() && log.getGlobalId().equals(OrderTestTXInterceptor.SkuGtxIdMap.get(skuId));
 		}).findFirst().orElse(null);
 		return txlog;
 	}

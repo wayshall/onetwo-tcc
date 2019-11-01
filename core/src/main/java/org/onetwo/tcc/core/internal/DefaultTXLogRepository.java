@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.onetwo.common.db.spi.BaseEntityManager;
 import org.onetwo.dbm.exception.EntityVersionException;
-import org.onetwo.tcc.boot.TCCProperties;
+import org.onetwo.tcc.core.TCCProperties;
 import org.onetwo.tcc.core.entity.TXContentData;
 import org.onetwo.tcc.core.entity.TXLogEntity;
 import org.onetwo.tcc.core.exception.TCCStatusChangedException;
@@ -85,7 +85,7 @@ public class DefaultTXLogRepository implements TXLogRepository {
 		if (resourceHolder.isGlobalTX()) {
 			messagePublisher.publishGTXlogRollbacked(txlog);
 		} else {
-			messagePublisher.publishTXlogRollbacked(resourceHolder.getTxlog());
+			messagePublisher.publishTXlogRollbacked(txlog);
 		}
 		return txlog;
 	}

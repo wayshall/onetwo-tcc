@@ -1,5 +1,6 @@
 package org.onetwo.tcc.core.internal;
 
+import org.onetwo.common.spring.SpringUtils;
 import org.onetwo.tcc.core.util.TCCInvokeContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,8 @@ public class TCCTransactionSynchronization extends TransactionSynchronizationAda
 	
 	@Override
 	public int getOrder() {
-		return DataSourceUtils.CONNECTION_SYNCHRONIZATION_ORDER + 100;
+//		return SpringUtils.higherThan(DataSourceUtils.CONNECTION_SYNCHRONIZATION_ORDER, 100);
+		return SpringUtils.lowerThan(DataSourceUtils.CONNECTION_SYNCHRONIZATION_ORDER, 100);
 	}
 
 	/***

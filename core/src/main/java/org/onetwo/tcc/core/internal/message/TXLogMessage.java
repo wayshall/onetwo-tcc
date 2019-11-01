@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.onetwo.tcc.core.util.TCCTransactionType;
+import org.onetwo.tcc.core.util.TXActions;
 import org.onetwo.tcc.core.util.TXStatus;
 
 import lombok.Data;
@@ -29,5 +30,12 @@ public class TXLogMessage implements Serializable {
 	boolean completed;
 	
 	Date occurAt = new Date();
+	
+	TXActions actions;
+	
+
+	public boolean isGlobalTX() {
+		return this.transactionType==TCCTransactionType.GLOBAL;
+	}
 }
 

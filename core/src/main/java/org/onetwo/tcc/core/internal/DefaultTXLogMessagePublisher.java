@@ -5,13 +5,17 @@ import org.onetwo.common.log.JFishLoggerFactory;
 import org.onetwo.common.spring.SpringUtils;
 import org.onetwo.ext.alimq.OnsMessage;
 import org.onetwo.ext.alimq.SimpleMessage;
+import org.onetwo.ext.ons.ONSProperties.MessageSerializerType;
 import org.onetwo.ext.ons.producer.ProducerService;
-import org.onetwo.tcc.boot.TCCProperties;
+import org.onetwo.tcc.core.TCCProperties;
 import org.onetwo.tcc.core.entity.TXLogEntity;
+import org.onetwo.tcc.core.internal.event.GTXLogEvent;
+import org.onetwo.tcc.core.internal.event.TXLogEvent;
 import org.onetwo.tcc.core.internal.message.GTXLogMessage;
 import org.onetwo.tcc.core.internal.message.TXLogMessage;
 import org.onetwo.tcc.core.spi.TXLogMessagePublisher;
 import org.onetwo.tcc.core.util.GTXActions;
+import org.onetwo.tcc.core.util.TXActions;
 import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -32,6 +36,8 @@ public class DefaultTXLogMessagePublisher implements TXLogMessagePublisher, Init
 	private ApplicationContext applicationContext;
 	@Value(TCCProperties.PRODUER_ID)
 	private String producerId;
+	@Autowired
+	private TCCProperties tccProperties;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -43,7 +49,7 @@ public class DefaultTXLogMessagePublisher implements TXLogMessagePublisher, Init
 	public void publishGTXlogCommitted(TXLogEntity txlog) {
 		GTXLogMessage message = new GTXLogMessage();
 		message.setId(txlog.getId());
-		message.setAction(GTXActions.COMMIT);
+		message.setAction(GTXActions.COMMITTED);
 
 		this.publishGTXLogMessage(message, txlog);
 		this.publishGTXLogEvent(message, txlog);
@@ -53,7 +59,7 @@ public class DefaultTXLogMessagePublisher implements TXLogMessagePublisher, Init
 	public void publishGTXlogRollbacked(TXLogEntity txlog) {
 		GTXLogMessage message = new GTXLogMessage();
 		message.setId(txlog.getId());
-		message.setAction(GTXActions.ROLLBACK);
+		message.setAction(GTXActions.ROLLBACKED);
 		
 		this.publishGTXLogMessage(message, txlog);
 		this.publishGTXLogEvent(message, txlog);
@@ -64,16 +70,17 @@ public class DefaultTXLogMessagePublisher implements TXLogMessagePublisher, Init
 				.topic(TCCProperties.TOPIC)
 				.tags(TCCProperties.TAG_GTXLOG)
 				.dataId(txlog.getId())
-//				.serializer(messageSerializer)
+				.serializer(MessageSerializerType.TYPING_JSON.name())
 				.body(message)
 				.build();
 		this.producerService.sendMessage(onsMessage, SendMessageFlags.EnableDatabaseTransactional);
 	}
 	
 	protected void publishGTXLogEvent(GTXLogMessage message, TXLogEntity txlog) {
-		this.applicationContext.publishEvent(message);
+		GTXLogEvent gtxEvent = new GTXLogEvent(this, message);
+		this.applicationContext.publishEvent(gtxEvent);
 		if (logger.isInfoEnabled()) {
-			logger.info(txlog.logMessage(" sent spring event: {}"), message);
+			logger.info(txlog.logMessage(" sent spring gtxlog event: {}"), gtxEvent);
 		}
 	}
 	
@@ -84,18 +91,25 @@ public class DefaultTXLogMessagePublisher implements TXLogMessagePublisher, Init
 	}
 	
 	protected void publishTXLogEvent(TXLogMessage message, TXLogEntity log) {
-		this.applicationContext.publishEvent(message);
+		TXLogEvent event = new TXLogEvent(this, message);
+		this.applicationContext.publishEvent(event);
 		if (logger.isInfoEnabled()) {
-			logger.info(log.logMessage(" sent spring event: {}"), message);
+			logger.info(log.logMessage(" sent spring txlog event: {}"), event);
 		}
 	}
 	
 	protected void publishTXLogMessage(TXLogMessage message, TXLogEntity txlog) {
+		if (!tccProperties.isPublishTxlog()) {
+			if (logger.isInfoEnabled()) {
+				logger.info("config[{}.publish-TXLog] is disabled, ignore send txlog message", TCCProperties.PREFIX_KEY);
+			}
+			return ;
+		}
 		OnsMessage onsMessage = SimpleMessage.builder()
 				.topic(TCCProperties.TOPIC)
 				.tags(TCCProperties.TAG_TXLOG)
 				.dataId(txlog.getId())
-//				.serializer(messageSerializer)
+				.serializer(MessageSerializerType.TYPING_JSON.name())
 				.body(message)
 				.build();
 		this.producerService.sendMessage(onsMessage, SendMessageFlags.EnableDatabaseTransactional);
@@ -104,6 +118,7 @@ public class DefaultTXLogMessagePublisher implements TXLogMessagePublisher, Init
 	@Override
 	public void publishTXlogCreated(TXLogEntity log) {
 		TXLogMessage message = createTXLogMessage(log);
+		message.setActions(TXActions.CREATED);
 		publishTXLogMessage(message, log);
 		publishTXLogEvent(message, log);
 	}
@@ -111,6 +126,7 @@ public class DefaultTXLogMessagePublisher implements TXLogMessagePublisher, Init
 	@Override
 	public void publishTXlogCompleted(TXLogEntity log) {
 		TXLogMessage message = createTXLogMessage(log);
+		message.setActions(TXActions.COMPLETED);
 		publishTXLogMessage(message, log);
 		publishTXLogEvent(message, log);
 	}
@@ -118,6 +134,7 @@ public class DefaultTXLogMessagePublisher implements TXLogMessagePublisher, Init
 	@Override
 	public void publishTXlogCommitted(TXLogEntity log) {
 		TXLogMessage message = createTXLogMessage(log);
+		message.setActions(TXActions.COMMITTED);
 		publishTXLogMessage(message, log);
 		publishTXLogEvent(message, log);
 	}
@@ -125,6 +142,7 @@ public class DefaultTXLogMessagePublisher implements TXLogMessagePublisher, Init
 	@Override
 	public void publishTXlogRollbacked(TXLogEntity log) {
 		TXLogMessage message = createTXLogMessage(log);
+		message.setActions(TXActions.ROLLBACKED);
 		publishTXLogMessage(message, log);
 		publishTXLogEvent(message, log);
 	}

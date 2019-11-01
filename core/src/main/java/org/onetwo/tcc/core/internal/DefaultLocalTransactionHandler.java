@@ -59,9 +59,9 @@ public class DefaultLocalTransactionHandler implements LocalTransactionHandler {
 			if (log.isInfoEnabled()) {
 				log.info(txlog.logMessage(" handle transational for txlog ： {}"), txlog);
 			}
-			if (txlogMessage.getAction()==GTXActions.COMMIT) {
+			if (txlogMessage.getAction()==GTXActions.COMMITTED) {
 				handleGTXCommit(txlog);
-			} else if (txlogMessage.getAction()==GTXActions.ROLLBACK) {
+			} else if (txlogMessage.getAction()==GTXActions.ROLLBACKED) {
 				handleGTXRollback(txlog);
 			} else {
 				throw new UnsupportedOperationException("unknow tx action: " + txlogMessage.getAction());
@@ -134,13 +134,13 @@ public class DefaultLocalTransactionHandler implements LocalTransactionHandler {
 	
 	protected void invokeConfirm(TXLogEntity txlog) {
 		log.info(txlog.logMessage("status is {}. try to invoke confirm method..."), txlog.getId(), txlog.getStatus());
-		this.invokeTccMethod(txlog, GTXActions.COMMIT);
+		this.invokeTccMethod(txlog, GTXActions.COMMITTED);
 		txlog.setStatus(TXStatus.CONFIRMED);
 	}
 
 	protected void invokeCancel(TXLogEntity txlog) {
 		log.info(txlog.logMessage("status is {}. try to invoke cancel method..."), txlog.getId(), txlog.getStatus());
-		this.invokeTccMethod(txlog, GTXActions.ROLLBACK);
+		this.invokeTccMethod(txlog, GTXActions.ROLLBACKED);
 		txlog.setStatus(TXStatus.CANCELED);
 	}
 	
@@ -155,11 +155,11 @@ public class DefaultLocalTransactionHandler implements LocalTransactionHandler {
 		TXContentData data = txlog.getContent();
 		TCCErrors error = null;
 		String tag = null;
-		if (txAction==GTXActions.COMMIT) {
+		if (txAction==GTXActions.COMMITTED) {
 			methodName = data.getConfirmMethod();
 			error = TCCErrors.ERR_TOO_MANY_CONFIRM;
 			tag = "confirm";
-		} else if (txAction==GTXActions.ROLLBACK) {
+		} else if (txAction==GTXActions.ROLLBACKED) {
 			methodName = data.getCancelMethod();
 			error = TCCErrors.ERR_TOO_MANY_CANCEL;
 			tag = "cancel";

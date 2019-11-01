@@ -8,7 +8,7 @@ import org.apache.commons.collections4.MultiValuedMap;
 import org.onetwo.ext.alimq.ConsumContext;
 import org.onetwo.ext.ons.annotation.ONSConsumer;
 import org.onetwo.ext.ons.annotation.ONSSubscribe;
-import org.onetwo.tcc.boot.TCCProperties;
+import org.onetwo.tcc.core.TCCProperties;
 import org.onetwo.tcc.core.internal.message.TXLogMessage;
 import org.springframework.transaction.annotation.Transactional;
 

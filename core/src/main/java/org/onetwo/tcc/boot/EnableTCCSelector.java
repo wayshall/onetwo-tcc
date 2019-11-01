@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.onetwo.common.spring.context.AbstractImportSelector;
+import org.onetwo.tcc.core.timer.TCCTimerConfiguration;
 import org.onetwo.tcc.feign.FeignTCCConfiguration;
 import org.onetwo.tcc.hystrix.TCCInvokeContextConfiguration;
 import org.onetwo.tcc.resttemplate.RestTemplateSupportConfiguration;
@@ -21,6 +22,7 @@ public class EnableTCCSelector extends AbstractImportSelector<EnableTCC>{
 		List<String> classNames = new ArrayList<String>();
 
 		classNames.add(TCCConfiguration.class.getName());
+		classNames.add(TCCTimerConfiguration.class.getName());
 		classNames.add(FeignTCCConfiguration.class.getName());
 		classNames.add(TCCInvokeContextConfiguration.class.getName());
 		classNames.add(RestTemplateSupportConfiguration.class.getName());

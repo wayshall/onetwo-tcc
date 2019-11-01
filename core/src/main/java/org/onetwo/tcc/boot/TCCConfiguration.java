@@ -7,6 +7,7 @@ package org.onetwo.tcc.boot;
 import org.onetwo.common.interceptor.SimpleInterceptorManager;
 import org.onetwo.ext.ons.annotation.EnableONSClient;
 import org.onetwo.ext.ons.annotation.ONSProducer;
+import org.onetwo.tcc.core.TCCProperties;
 import org.onetwo.tcc.core.internal.DefaultLocalTransactionHandler;
 import org.onetwo.tcc.core.internal.DefaultRemoteTXContextLookupService;
 import org.onetwo.tcc.core.internal.DefaultTXLogMessagePublisher;
@@ -85,6 +86,7 @@ public class TCCConfiguration {
 	public TXLogMessagePublisher tccMessagePublisher() {
 		return new DefaultTXLogMessagePublisher();
 	}
+	
 
 }
 

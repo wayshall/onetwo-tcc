@@ -1,4 +1,4 @@
-package org.onetwo.tcc.boot;
+package org.onetwo.tcc.core;
 
 import java.util.List;
 
@@ -42,6 +42,10 @@ public class TCCProperties {
 
 	private CompensationProps compensation;
 	private List<String> remoteExceptions = Lists.newArrayList("org.springframework.web.client.ResourceAccessException");
+	/***
+	 * 是否发布事务日志消息
+	 */
+	private boolean publishTxlog;
 	
 	
 	@Data
@@ -49,11 +53,13 @@ public class TCCProperties {
 		/***
 		 * in milliseconds
 		 */
-		public static final String FIXED_RATE_KEY = PREFIX_KEY+".fixedRateString";
+		public static final String PREFIX = PREFIX_KEY + ".compensation";
+		public static final String FIXED_RATE_KEY = PREFIX + ".fixedRateString";
+		public static final String ENABLED_REDIS_LOCK_KEY = PREFIX + ".useReidsLock";
 		
-		private String lockKey = "locker:onetwo-tcc:compensation";
+		private String lockKey = "onetwo-tcc-compensation";
 		private boolean useReidsLock = true;
-		private String redisLockTimeout = "2m";
+//		private String redisLockTimeout = "2m";
 		/***
 		 * 补充服务判断事务超时的时间
 		 */

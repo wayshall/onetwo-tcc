@@ -8,6 +8,12 @@ spring:
         username: root
         password: root
         driver-class-name: com.mysql.jdbc.Driver
+    redis:
+        host: localhost
+        port: 6379
+        database: 1
+        pool:
+            maxActive: 2
 jfish: 
     mq:
         transactional:
@@ -19,3 +25,11 @@ jfish:
         onsAddr: localhost:10911
         #serializer: TYPING_JSON
         namesrvAddr: localhost:9876
+    redis: 
+        lock-registry: 
+            key: ${spring.application.name}
+    tcc: 
+        publish-txlog: true
+        compensation: 
+            use-reids-lock: true
+            timeout: 30s
