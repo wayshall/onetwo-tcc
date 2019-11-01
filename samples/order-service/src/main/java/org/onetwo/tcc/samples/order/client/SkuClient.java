@@ -7,8 +7,10 @@ import org.springframework.cloud.netflix.feign.FeignClient;
  * @author weishao zeng
  * <br/>
  */
-@FeignClient(name="skuClient", url="http://localhost:9082")
+@FeignClient(name="skuClient", url=SkuClient.SERVICE_URL)
 public interface SkuClient extends SkuApi {
+	
+	String SERVICE_URL = "http://localhost:9082";
 
 }
 

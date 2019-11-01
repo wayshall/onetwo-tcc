@@ -9,6 +9,7 @@ import javax.persistence.Table;
 import javax.persistence.Version;
 
 import org.onetwo.dbm.annotation.DbmJsonField;
+import org.onetwo.dbm.annotation.DbmJsonField.JsonConvertibleTypes;
 import org.onetwo.dbm.jpa.BaseEntity;
 import org.onetwo.tcc.core.util.TCCTransactionType;
 import org.onetwo.tcc.core.util.TXStatus;
@@ -39,7 +40,7 @@ public class TXLogEntity extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	TXStatus status;
 	
-	@DbmJsonField(storeTyping=true)
+	@DbmJsonField(storeTyping=true, convertibleJavaType=JsonConvertibleTypes.BYTE_ARRAY)
 	TXContentData content;
 	
 	@Version

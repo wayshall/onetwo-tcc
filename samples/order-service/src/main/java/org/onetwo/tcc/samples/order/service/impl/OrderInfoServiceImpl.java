@@ -11,8 +11,10 @@ import org.onetwo.tcc.samples.order.entity.OrderInfoEntity;
 import org.onetwo.tcc.samples.order.entity.OrderInfoEntity.OrderStatus;
 import org.onetwo.tcc.samples.order.vo.CreateOrderRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @TCCService
@@ -20,8 +22,11 @@ public class OrderInfoServiceImpl {
 
     @Autowired
     private BaseEntityManager baseEntityManager;
+    
     @Autowired
     private SkuClient skuClient;
+    @Autowired
+    private RestTemplate restTemplate;
     
     @TCCTransactional(globalized=true)
     @Transactional
@@ -56,7 +61,8 @@ public class OrderInfoServiceImpl {
 		ReduceStockRequest stockRequest = new ReduceStockRequest();
 		stockRequest.setSkuId(request.getSkuId());
 		stockRequest.setStockCount(request.getCount());
-		skuClient.reduceStock(stockRequest);
+//		skuClient.reduceStock(stockRequest);
+		HttpEntity res = restTemplate.postForEntity(SkuClient.SERVICE_URL + "/sku/reduceStock", stockRequest, HttpEntity.class);
 		
 		if (true) {
 			throw new ServiceException("failAfterReduceStock");

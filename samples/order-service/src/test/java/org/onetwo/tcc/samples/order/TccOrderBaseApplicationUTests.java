@@ -8,11 +8,13 @@ import org.onetwo.common.jackson.JsonMapper;
 import org.onetwo.tcc.samples.order.TccOrderBaseApplicationUTests.TccOrderTestConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringRunner.class)
@@ -42,6 +44,11 @@ public class TccOrderBaseApplicationUTests implements BootMvcBaseITestable {
 	@Configuration
 	@ComponentScan
 	public static class TccOrderTestConfig {
+		
+		@Bean
+		public RestTemplate restTemplate() {
+			return new RestTemplate();
+		}
 		
 	}
 
