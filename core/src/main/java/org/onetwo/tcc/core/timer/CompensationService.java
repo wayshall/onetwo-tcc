@@ -1,12 +1,15 @@
-package org.onetwo.tcc.core.internal;
+package org.onetwo.tcc.core.timer;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.onetwo.boot.module.redis.RedisLockRunner;
 import org.onetwo.common.date.Dates;
 import org.onetwo.common.db.spi.BaseEntityManager;
 import org.onetwo.tcc.boot.TCCProperties.CompensationProps;
 import org.onetwo.tcc.core.entity.TXLogEntity;
+import org.onetwo.tcc.core.spi.TXLogRepository;
+import org.onetwo.tcc.core.util.TCCTransactionType;
 import org.onetwo.tcc.core.util.TXStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.redis.util.RedisLockRegistry;
@@ -26,9 +29,10 @@ public class CompensationService {
 	@Autowired(required=false)
 	private RedisLockRegistry redisLockRegistry;
 	private CompensationProps compensationProps;
-	private long timeoutInSeconds;
 	@Autowired
 	private BaseEntityManager baseEntityManager;
+	@Autowired
+	private TXLogRepository txLogRepository;
 	
 	@Scheduled(fixedRateString="${"+CompensationProps.FIXED_RATE_KEY+":30000}", initialDelay=30000)
 	public void scheduleCheckExecutingTXLogs(){
@@ -45,12 +49,28 @@ public class CompensationService {
 	}
 
 	protected void markExecutingTXLogsToTimeout() {
-		LocalDateTime timeoutAt = LocalDateTime.now().minusSeconds(timeoutInSeconds);
-		baseEntityManager.from(TXLogEntity.class)
+		LocalDateTime timeoutAt = LocalDateTime.now().minusSeconds(compensationProps.getTimeoutInSeconds());
+		List<TXLogEntity> gtxlogList = baseEntityManager.from(TXLogEntity.class)
 						.where()
 							.field("status").is(TXStatus.EXECUTING)
+							.field("transactionType").is(TCCTransactionType.GLOBAL)
 							.field("createAt").lessThan(Dates.toDate(timeoutAt))
-						.toQuery();
+						.toQuery()
+						.list();
+		for(TXLogEntity txlog : gtxlogList) {
+			markGTXTimeout(txlog);
+		}
+	}
+	
+	protected void markGTXTimeout(TXLogEntity txlog) {
+		try {
+			txLogRepository.updateGTXToTimeout(txlog);
+			if (log.isInfoEnabled()) {
+				log.info(txlog.logMessage(" global transaction has been timeouted"));
+			}
+		} catch (Exception e) {
+			log.error(txlog.logMessage(" global transaction mark timeout error: " + e.getMessage()), e);
+		}
 	}
 	
 

@@ -34,6 +34,9 @@ public interface TXLogRepository {
 
 	@Transactional(propagation=Propagation.REQUIRES_NEW)
 	TXLogEntity updateToRollbacked(TransactionResourceHolder resourceHolder);
+	
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
+	TXLogEntity updateGTXToTimeout(TXLogEntity txlog);
 
 	/****
 	 * 根据事务id查找所有相关事务

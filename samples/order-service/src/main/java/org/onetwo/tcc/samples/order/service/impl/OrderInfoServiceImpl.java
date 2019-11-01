@@ -30,13 +30,13 @@ public class OrderInfoServiceImpl {
     
     @TCCTransactional(globalized=true)
     @Transactional
-    public OrderInfoEntity save(CreateOrderRequest request) {
+    public OrderInfoEntity createSuccess(CreateOrderRequest request) {
     	OrderInfoEntity order = new OrderInfoEntity();
     	order.setSkuId(request.getSkuId());
     	order.setSkuCount(request.getCount());
     	order.setStatus(OrderStatus.CREATED);
     	order.setPrice(10.0D*request.getCount());
-    	order.setTitle("测试订单");
+    	order.setTitle("测试订单-createSuccess");
 		baseEntityManager.persist(order);
 		
 		ReduceStockRequest stockRequest = new ReduceStockRequest();

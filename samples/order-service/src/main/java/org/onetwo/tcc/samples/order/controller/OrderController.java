@@ -24,7 +24,7 @@ public class OrderController implements DateInitBinder {
     
     @PostMapping(value="createSuccess", consumes=MediaType.APPLICATION_JSON_UTF8_VALUE)
     public CreateOrderResponse createSuccess(@RequestBody CreateOrderRequest request){
-    	OrderInfoEntity order = this.orderInfoService.save(request);
+    	OrderInfoEntity order = this.orderInfoService.createSuccess(request);
     	return CreateOrderResponse.builder()
     							.id(order.getId().toString())
     							.build();

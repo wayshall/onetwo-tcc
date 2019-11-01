@@ -40,16 +40,9 @@ public class TCCProperties {
 	public static final String TAG_TXLOG = "${" + PREFIX_KEY + ".rmq.tags.txlog:TXLOG}";
 //	public static final String CONSUMER_TXLOG = "${" + PREFIX_KEY + ".rmq.consumers:txlog-consumer}";
 
-	/***
-	 * 事务超时时间
-	 */
-	private String timeout = "2m";
 	private CompensationProps compensation;
 	private List<String> remoteExceptions = Lists.newArrayList("org.springframework.web.client.ResourceAccessException");
 	
-	public long getTimeoutInSeconds() {
-		return LangOps.timeToSeconds(timeout, 120L);
-	}
 	
 	@Data
 	public static class CompensationProps {
@@ -59,8 +52,15 @@ public class TCCProperties {
 		public static final String FIXED_RATE_KEY = PREFIX_KEY+".fixedRateString";
 		
 		private String lockKey = "locker:onetwo-tcc:compensation";
-		private boolean useReidsLock;
-		private String redisLockTimeout;
+		private boolean useReidsLock = true;
+		private String redisLockTimeout = "2m";
+		/***
+		 * 补充服务判断事务超时的时间
+		 */
+		private String timeout = "2m";
+		public long getTimeoutInSeconds() {
+			return LangOps.timeToSeconds(timeout, 120L);
+		}
 	}
 }
 

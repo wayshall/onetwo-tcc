@@ -126,5 +126,14 @@ public class DefaultTXLogRepository implements TXLogRepository {
 		return txlog;
 	}
 
+	@Override
+	@Transactional(propagation=Propagation.REQUIRES_NEW)
+	public TXLogEntity updateGTXToTimeout(TXLogEntity txlog) {
+		txlog.setStatus(TXStatus.TIMEOUT);
+		update(txlog);
+		messagePublisher.publishGTXlogRollbacked(txlog);
+		return txlog;
+	}
+
 }
 
