@@ -60,7 +60,7 @@ public class TCCProperties {
 		public static final String FIXED_RATE_KEY = PREFIX + ".fixedRateString";
 		public static final String ENABLED_REDIS_LOCK_KEY = PREFIX + ".useReidsLock";
 		
-		private String lockKey = "onetwo-tcc-compensation";
+		private String lockKey = "tcc:compensation";
 		private boolean useReidsLock = true;
 //		private String redisLockTimeout = "2m";
 		/***
