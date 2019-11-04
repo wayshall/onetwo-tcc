@@ -244,5 +244,43 @@ public class TccOrderServiceITest extends TccOrderBaseApplicationUTests {
 		return json;
 	}
 
+	@Test
+	public void testCreateWithCreatingSuccess() throws Exception {
+		SkuVO createSku = new SkuVO();
+		createSku.setStockCount(100);
+//		createSku.setId(skuId);
+		createSku.setName("韭菜");
+		Long skuId = skuClient.cleanAndCreateSku(createSku).getId();
+		
+		CreateOrderRequest request = new CreateOrderRequest();
+		request.setSkuId(skuId);
+		request.setCount(1);
+		
+		if (testWithCoupon) {
+			CouponVO coupon = couponClient.clearAndInsertCoupon(1L);
+			request.setCouponId(coupon.getId());
+		}
+		
+		String json = createOrder("/order/createWithCreatingSuccess", request);
+		System.out.println("json: " + json);
+//		CreateOrderResponse res = jsonMapper.fromJson(json, CreateOrderResponse.class);
+		
+		TXLogMessage skuLog = null;
+		while((skuLog = findSkuServiceTXLog(skuId))==null) {
+			LangUtils.await(1);
+			System.out.println("wait 1 seconds...");
+		}
+		assertThat(skuLog.getStatus()).isEqualTo(TXStatus.CONFIRMED);
+		SkuVO sku = skuClient.get(skuId);
+		assertThat(sku).isNotNull();
+		assertThat(sku.getFrozenStockCount()).isEqualTo(0);
+		assertThat(sku.getStockCount()).isEqualTo(createSku.getStockCount()-request.getCount());
+		
+		if (testWithCoupon) {
+			CouponVO coupon = this.couponClient.get(request.getCouponId());
+			assertThat(coupon).isNotNull();
+			assertThat(coupon.getStatus()).isEqualTo(CouponStatus.USED);
+		}
+	}
 }
 

@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.onetwo4j</groupId>
         <artifactId>onetwo-tcc-samples-parent</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.5.1-SNAPSHOT</version>
         <relativePath>../parent</relativePath>
     </parent>
 	

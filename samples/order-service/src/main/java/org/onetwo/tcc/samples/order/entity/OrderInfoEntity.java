@@ -80,7 +80,9 @@ public class OrderInfoEntity extends BaseEntity  {
      */
     public static enum OrderStatus {
     	CREATED,
-    	PAID
+    	PAID,
+    	CREATING,
+    	CANCEL
     }
     
 }

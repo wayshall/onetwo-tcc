@@ -30,6 +30,8 @@ public class OrderInfoServiceImpl {
     private CouponClient couponClient;
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private OrderInfoServiceImpl orderInfoService;
     
     @TCCTransactional(globalized=true)
     @Transactional
@@ -84,5 +86,46 @@ public class OrderInfoServiceImpl {
 		
 		return order;
 	}
+
+    @Transactional
+    public OrderInfoEntity createWithCreatingSuccess(CreateOrderRequest request) {
+    	OrderInfoEntity order = new OrderInfoEntity();
+    	order.setSkuId(request.getSkuId());
+    	order.setSkuCount(request.getCount());
+    	order.setStatus(OrderStatus.CREATING);
+    	order.setPrice(10.0D*request.getCount());
+    	order.setTitle("测试订单-createSuccess2");
+		baseEntityManager.persist(order);
+		
+		orderInfoService.creatingOrder(request, order);
+		
+		return order;
+		
+    }
+    
+    @TCCTransactional(globalized=true, confirmMethod="confirmOrder", cancelMethod="cancelOrder")
+    public OrderInfoEntity creatingOrder(CreateOrderRequest request, OrderInfoEntity order) {
+		ReduceStockRequest stockRequest = new ReduceStockRequest();
+		stockRequest.setSkuId(request.getSkuId());
+		stockRequest.setStockCount(request.getCount());
+		stockRequest.setSleepInSeconds(request.getSleepInSecondsOnReduceStock());
+		skuClient.reduceStock(stockRequest);
+		
+		if (request.getCouponId()!=null) {
+			couponClient.frozonCoupon(request.getCouponId());
+		}
+		
+		return order;
+	}
+    
+    protected void confirmOrder(CreateOrderRequest request, OrderInfoEntity order) {
+    	order.setStatus(OrderStatus.CREATED);
+    	baseEntityManager.update(order);
+    }
+    
+    protected void cancelOrder(CreateOrderRequest request, OrderInfoEntity order) {
+    	order.setStatus(OrderStatus.CANCEL);
+    	baseEntityManager.update(order);
+    }
 
 }

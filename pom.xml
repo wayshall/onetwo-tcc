@@ -3,7 +3,7 @@
 
   <groupId>org.onetwo4j</groupId>
   <artifactId>onetwo-tcc-modules</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.5.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>onetwo-tcc-modules</name>
@@ -70,6 +70,14 @@
 	  <profile>
     	<id>release</id>
     	<modules>
+            <module>parent</module>
+            <module>core</module>
+            
+            <module>samples/parent</module>
+            <module>samples/api</module>
+            <module>samples/order-service</module>
+            <module>samples/product-service</module>
+            <module>samples/user-service</module>
 	  	</modules>
         <build>
             <plugins>
