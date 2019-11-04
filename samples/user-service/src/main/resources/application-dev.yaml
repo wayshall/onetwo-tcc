@@ -1,10 +1,10 @@
 server:
-    port: 9080
+    port: 9083
 spring: 
     application:
-        name: tcc-order-service
+        name: tcc-user-service
     datasource: 
-        url: jdbc:mysql://localhost:3306/tcc_order?&useSSL=false&characterEncoding=UTF-8
+        url: jdbc:mysql://localhost:3306/tcc_user?&useSSL=false&characterEncoding=UTF-8
         username: root
         password: root
         driver-class-name: com.mysql.jdbc.Driver
@@ -32,12 +32,3 @@ jfish:
         publish-txlog: true
         compensation: 
             use-reids-lock: true
-            timeout: 30s
-logging: 
-    level: 
-        org.onetwo.tcc.samples.order.client.SkuClient: DEBUG
-        org.onetwo.tcc.samples.order.client.CouponClient: DEBUG
-hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds: 20000
-ribbon: 
-    ConnectTimeout: 5000
-    ReadTimeout: 10000

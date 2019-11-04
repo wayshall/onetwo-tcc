@@ -16,5 +16,9 @@ public class CreateOrderRequest {
 	@NotNull
 	Integer count;
 
+	Long couponId;
+	
+	int sleepInSecondsOnReduceStock;
+	
 }
 

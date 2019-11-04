@@ -1,6 +1,6 @@
 package org.onetwo.tcc.samples.order.client;
 
-import org.onetwo.tcc.samples.api.SkuApi;
+import org.onetwo.tcc.samples.product.api.SkuApi;
 import org.springframework.cloud.netflix.feign.FeignClient;
 
 /**

@@ -10,16 +10,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.concurrent.TimeoutException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.onetwo.common.exception.ServiceException;
 import org.onetwo.common.utils.LangUtils;
-import org.onetwo.dbm.id.SnowflakeIdGenerator;
 import org.onetwo.tcc.core.internal.message.TXLogMessage;
 import org.onetwo.tcc.core.util.TXStatus;
-import org.onetwo.tcc.samples.api.SkuApi.SkuVO;
+import org.onetwo.tcc.samples.order.client.CouponClient;
 import org.onetwo.tcc.samples.order.client.SkuClient;
 import org.onetwo.tcc.samples.order.vo.CreateOrderRequest;
+import org.onetwo.tcc.samples.product.api.SkuApi.SkuVO;
+import org.onetwo.tcc.samples.usr.api.CouponApi.CouponStatus;
+import org.onetwo.tcc.samples.usr.api.CouponApi.CouponVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.Commit;
@@ -30,26 +34,37 @@ public class TccOrderServiceITest extends TccOrderBaseApplicationUTests {
     @Autowired
     private SkuClient skuClient;
     @Autowired
+    private CouponClient couponClient;
+    
+    private boolean testWithCoupon = true;
+    
+    @Autowired
     private ErrorOnRollbackListenner errorOnRollbackListenner;
-    private SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator(1);
-    public static Long skuId;
+//    private SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator(1);
+//    public static Long skuId;
     
     @Before
     public void setup() {
-		skuId = idGenerator.nextId();
     }
+    
     
 	@Test
 	public void testCreateOrderSuccess() throws Exception {
 		SkuVO createSku = new SkuVO();
 		createSku.setStockCount(100);
-		createSku.setId(skuId);
+//		createSku.setId(skuId);
 		createSku.setName("韭菜");
-		skuClient.cleanAndCreateSku(createSku);
+		Long skuId = skuClient.cleanAndCreateSku(createSku).getId();
 		
 		CreateOrderRequest request = new CreateOrderRequest();
 		request.setSkuId(skuId);
 		request.setCount(1);
+		
+		if (testWithCoupon) {
+			CouponVO coupon = couponClient.clearAndInsertCoupon(1L);
+			request.setCouponId(coupon.getId());
+		}
+		
 		String json = createOrder("/order/createSuccess", request);
 		System.out.println("json: " + json);
 //		CreateOrderResponse res = jsonMapper.fromJson(json, CreateOrderResponse.class);
@@ -60,24 +75,81 @@ public class TccOrderServiceITest extends TccOrderBaseApplicationUTests {
 			System.out.println("wait 1 seconds...");
 		}
 		assertThat(skuLog.getStatus()).isEqualTo(TXStatus.CONFIRMED);
-		SkuVO sku = skuClient.get(createSku.getId());
+		SkuVO sku = skuClient.get(skuId);
 		assertThat(sku).isNotNull();
 		assertThat(sku.getFrozenStockCount()).isEqualTo(0);
 		assertThat(sku.getStockCount()).isEqualTo(createSku.getStockCount()-request.getCount());
+		
+		if (testWithCoupon) {
+			CouponVO coupon = this.couponClient.get(request.getCouponId());
+			assertThat(coupon).isNotNull();
+			assertThat(coupon.getStatus()).isEqualTo(CouponStatus.USED);
+		}
 	}
+	
 
 	@Test
-	public void testFailAfterReduceStock() throws Exception {
-		Long skuId = 1L;
+	public void testTimeoutOnReduceStock() throws Exception {
 		SkuVO createSku = new SkuVO();
 		createSku.setStockCount(100);
-		createSku.setId(skuId);
+//		createSku.setId(skuId);
 		createSku.setName("韭菜");
-		skuClient.cleanAndCreateSku(createSku);
+		Long skuId = skuClient.cleanAndCreateSku(createSku).getId();
 		
 		CreateOrderRequest request = new CreateOrderRequest();
 		request.setSkuId(skuId);
 		request.setCount(1);
+		// 库存休眠30秒
+		request.setSleepInSecondsOnReduceStock(30);
+		
+		if (testWithCoupon) {
+			CouponVO coupon = couponClient.clearAndInsertCoupon(1L);
+			request.setCouponId(coupon.getId());
+		}
+		
+		assertThatThrownBy(() -> {
+			String json = createOrder("/order/createSuccess", request);
+			System.out.println("json: " + json);
+		}).hasRootCauseInstanceOf(TimeoutException.class);
+//		CreateOrderResponse res = jsonMapper.fromJson(json, CreateOrderResponse.class);
+		
+		TXLogMessage skuLog = null;
+		while((skuLog = findSkuServiceTXLog(skuId))==null) {
+			LangUtils.await(1);
+			System.out.println("wait 1 seconds...");
+		}
+
+
+		assertThat(skuLog.getStatus()).isEqualTo(TXStatus.RB_ONLY);
+		SkuVO sku = skuClient.get(skuId);
+		assertThat(sku).isNotNull();
+		assertThat(sku.getFrozenStockCount()).isEqualTo(0);
+		assertThat(sku.getStockCount()).isEqualTo(createSku.getStockCount());
+		
+		if (testWithCoupon) {
+			CouponVO coupon = this.couponClient.get(request.getCouponId());
+			assertThat(coupon).isNotNull();
+			assertThat(coupon.getStatus()).isEqualTo(CouponStatus.VALID);
+		}
+		
+	}
+
+	@Test
+	public void testFailAfterReduceStock() throws Exception {
+		SkuVO createSku = new SkuVO();
+		createSku.setStockCount(100);
+//		createSku.setId(skuId);
+		createSku.setName("韭菜");
+		Long skuId = skuClient.cleanAndCreateSku(createSku).getId();
+
+		CreateOrderRequest request = new CreateOrderRequest();
+		request.setSkuId(skuId);
+		request.setCount(1);
+		
+		if (testWithCoupon) {
+			CouponVO coupon = couponClient.clearAndInsertCoupon(1L);
+			request.setCouponId(coupon.getId());
+		}
 		
 		assertThatThrownBy(() -> {
 			String json = createOrder("/order/failAfterReduceStock", request);
@@ -91,10 +163,16 @@ public class TccOrderServiceITest extends TccOrderBaseApplicationUTests {
 			System.out.println("wait 1 seconds...");
 		}
 		assertThat(skuLog.getStatus()).isEqualTo(TXStatus.CANCELED);
-		SkuVO sku = skuClient.get(createSku.getId());
+		SkuVO sku = skuClient.get(skuId);
 		assertThat(sku).isNotNull();
 		assertThat(sku.getFrozenStockCount()).isEqualTo(0);
 		assertThat(sku.getStockCount()).isEqualTo(createSku.getStockCount());
+		
+		if (testWithCoupon) {
+			CouponVO coupon = this.couponClient.get(request.getCouponId());
+			assertThat(coupon).isNotNull();
+			assertThat(coupon.getStatus()).isEqualTo(CouponStatus.VALID);
+		}
 	}
 	
 	/****
@@ -104,16 +182,19 @@ public class TccOrderServiceITest extends TccOrderBaseApplicationUTests {
 	 */
 	@Test
 	public void testFailAfterReduceStockAndErrorOnRollback() throws Exception {
-		Long skuId = 1L;
 		SkuVO createSku = new SkuVO();
 		createSku.setStockCount(100);
-		createSku.setId(skuId);
 		createSku.setName("韭菜");
-		skuClient.cleanAndCreateSku(createSku);
+		Long skuId = skuClient.cleanAndCreateSku(createSku).getId();
 		
 		CreateOrderRequest request = new CreateOrderRequest();
 		request.setSkuId(skuId);
 		request.setCount(1);
+		
+		if (testWithCoupon) {
+			CouponVO coupon = couponClient.clearAndInsertCoupon(1L);
+			request.setCouponId(coupon.getId());
+		}
 		
 		this.errorOnRollbackListenner.enabled = true;
 		assertThatThrownBy(() -> {
@@ -131,10 +212,16 @@ public class TccOrderServiceITest extends TccOrderBaseApplicationUTests {
 			waitCount++;
 		}
 		assertThat(skuLog.getStatus()).isEqualTo(TXStatus.CANCELED);
-		SkuVO sku = skuClient.get(createSku.getId());
+		SkuVO sku = skuClient.get(skuId);
 		assertThat(sku).isNotNull();
 		assertThat(sku.getFrozenStockCount()).isEqualTo(0);
 		assertThat(sku.getStockCount()).isEqualTo(createSku.getStockCount());
+		
+		if (testWithCoupon) {
+			CouponVO coupon = this.couponClient.get(request.getCouponId());
+			assertThat(coupon).isNotNull();
+			assertThat(coupon.getStatus()).isEqualTo(CouponStatus.VALID);
+		}
 		
 	}
 	

@@ -4,7 +4,7 @@ package org.onetwo.tcc.samples.product.controller;
 
 import javax.validation.Valid;
 
-import org.onetwo.tcc.samples.api.SkuApi;
+import org.onetwo.tcc.samples.product.api.SkuApi;
 import org.onetwo.tcc.samples.product.service.impl.SkuServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,8 +22,8 @@ public class SkuController implements SkuApi {
 		skuService.reduceStock(request);
 	}
 	
-	public void cleanAndCreateSku(@RequestBody SkuVO request) {
-		skuService.cleanAndCreateSku(request);
+	public SkuVO cleanAndCreateSku(@RequestBody SkuVO request) {
+		return skuService.cleanAndCreateSku(request).asBean(SkuVO.class);
 	}
 
 	@Override

@@ -1,0 +1,49 @@
+server:
+    port: 9080
+spring: 
+    jackson:
+        serialization:
+            indent_output: true
+    http:
+        multipart:
+            maxFileSize: 5MB
+            maxRequestSize: 20MB
+jfish: 
+    mq:
+        transactional:
+            enabled: true
+            sendTask:
+                enabled: false
+
+hystrix: 
+    command: 
+      default: 
+          execution: 
+              isolation: 
+                  semaphore: 
+                      maxConcurrentRequests: 10000
+                  thread: 
+                      timeoutInMilliseconds: 60000
+ribbon: 
+    MaxTotalConnections: 3000
+    MaxConnectionsPerHost: 1000
+    ConnectTimeout: 10000
+    ReadTimeout: 50000
+    httpclient:
+        enabled: false
+    okhttp:
+        enabled: true
+management: 
+    security: 
+        enabled: false
+security: 
+    ignored: /** # if uaa can not ignore
+    basic: 
+        enabled: false
+feign:
+    httpclient:
+        enabled: false
+    okhttp:
+        enabled: true
+    hystrix:
+        enabled: true

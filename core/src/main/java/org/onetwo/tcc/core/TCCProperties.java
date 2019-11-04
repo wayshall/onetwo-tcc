@@ -41,6 +41,9 @@ public class TCCProperties {
 //	public static final String CONSUMER_TXLOG = "${" + PREFIX_KEY + ".rmq.consumers:txlog-consumer}";
 
 	private CompensationProps compensation;
+	/***
+	 * io error, timeout ...
+	 */
 	private List<String> remoteExceptions = Lists.newArrayList("org.springframework.web.client.ResourceAccessException");
 	/***
 	 * 是否发布事务日志消息

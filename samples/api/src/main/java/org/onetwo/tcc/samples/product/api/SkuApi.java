@@ -1,4 +1,4 @@
-package org.onetwo.tcc.samples.api;
+package org.onetwo.tcc.samples.product.api;
 
 import javax.validation.constraints.NotNull;
 
@@ -26,7 +26,7 @@ public interface SkuApi {
     void reduceStock(@RequestBody ReduceStockRequest request);
     
     @PostMapping(value="/cleanAndCreateSku", consumes=MediaType.APPLICATION_JSON_UTF8_VALUE)
-    void cleanAndCreateSku(@RequestBody SkuVO request);
+    SkuVO cleanAndCreateSku(@RequestBody SkuVO request);
     
     @GetMapping("get")
     SkuVO get(@RequestParam("skuId") Long skuId);
@@ -37,6 +37,7 @@ public interface SkuApi {
     	Long skuId;
     	@NotNull
     	Integer stockCount;
+    	int sleepInSeconds;
     }
     
     

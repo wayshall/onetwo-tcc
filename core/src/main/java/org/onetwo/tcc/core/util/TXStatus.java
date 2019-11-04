@@ -10,7 +10,7 @@ import lombok.Getter;
 已确认：CONFIRMED
 已取消：CANCELED
 只能回滚（主事务超时，正在执行的分支事务只能回滚）：RB_ONLY
-超时（主事务才有）：TIMEOUT
+超时（主事务才有）：TIMED_OUT
  * @author weishao zeng
  * <br/>
  */
@@ -22,7 +22,7 @@ public enum TXStatus {
 	RB_ONLY("只能回滚"),
 	CONFIRMED("已确认"),
 	CANCELED("已取消"),
-	TIMEOUT("超时")
+	TIMED_OUT("超时")
 	;
 	
 	@Getter

@@ -46,6 +46,7 @@
                 <module>samples/api</module>
                 <module>samples/order-service</module>
                 <module>samples/product-service</module>
+                <module>samples/user-service</module>
 			</modules>
            <build>
               <plugins>

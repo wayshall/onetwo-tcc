@@ -7,6 +7,7 @@ import org.onetwo.dbm.exception.EntityVersionException;
 import org.onetwo.tcc.core.TCCProperties;
 import org.onetwo.tcc.core.entity.TXContentData;
 import org.onetwo.tcc.core.entity.TXLogEntity;
+import org.onetwo.tcc.core.exception.TCCErrors;
 import org.onetwo.tcc.core.exception.TCCStatusChangedException;
 import org.onetwo.tcc.core.spi.TXLogMessagePublisher;
 import org.onetwo.tcc.core.spi.TXLogRepository;
@@ -95,7 +96,8 @@ public class DefaultTXLogRepository implements TXLogRepository {
 			baseEntityManager.update(txlog);
 		} catch (EntityVersionException e) {
 			// 一般发生在事务提交的时候，发现事务状态已被修改（如标记为RB_ONLY）
-			throw new TCCStatusChangedException(e)
+//			throw new TCCStatusChangedException(e)
+			throw new TCCStatusChangedException(txlog.logMessage(" The status of transaction has changed!"))
 								.put("txlog", txlog);
 		}
 	}
@@ -129,7 +131,7 @@ public class DefaultTXLogRepository implements TXLogRepository {
 	@Override
 	@Transactional(propagation=Propagation.REQUIRES_NEW)
 	public TXLogEntity updateGTXToTimeout(TXLogEntity txlog) {
-		txlog.setStatus(TXStatus.TIMEOUT);
+		txlog.setStatus(TXStatus.TIMED_OUT);
 		update(txlog);
 		messagePublisher.publishGTXlogRollbacked(txlog);
 		return txlog;
