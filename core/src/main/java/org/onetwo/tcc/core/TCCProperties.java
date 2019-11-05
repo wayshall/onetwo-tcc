@@ -31,11 +31,11 @@ public class TCCProperties {
 	/***
 	 * jfish.tcc.topic.name
 	 */
-	public static final String TOPIC = "${" + PREFIX_KEY + ".rmq.topic.name:TCC}";
+	public static final String TOPIC = "${" + PREFIX_KEY + ".rmq.topic:TCC}";
 	/***
 	 * 事务
 	 */
-	public static final String CONSUMER_GTXLOG = "${" + PREFIX_KEY + ".rmq.consumer.gtxlog:GTXLOG-${spring.application.name}}";
+	public static final String CONSUMER_GTXLOG = "${" + PREFIX_KEY + ".rmq.consumers.gtxlog:GTXLOG-${spring.application.name}}";
 	public static final String TAG_GTXLOG = "${" + PREFIX_KEY + ".rmq.tags.gtxlog:GTXLOG}";
 	public static final String TAG_TXLOG = "${" + PREFIX_KEY + ".rmq.tags.txlog:TXLOG}";
 //	public static final String CONSUMER_TXLOG = "${" + PREFIX_KEY + ".rmq.consumers:txlog-consumer}";
@@ -57,11 +57,15 @@ public class TCCProperties {
 		 * in milliseconds
 		 */
 		public static final String PREFIX = PREFIX_KEY + ".compensation";
-		public static final String FIXED_RATE_KEY = PREFIX + ".fixedRateString";
-		public static final String ENABLED_REDIS_LOCK_KEY = PREFIX + ".useReidsLock";
+		public static final String TIMER_CONFIG_KEY = PREFIX + ".fixedDelayString";
+		public static final String LOCKER_KEY = PREFIX + ".locker";
+		
+
+		public static final String LOCKER_REDIS = "redis";
+		public static final String LOCKER_DBM = "dbm";
 		
 		private String lockKey = "tcc:compensation";
-		private boolean useReidsLock = true;
+		private String locker = LOCKER_REDIS;
 //		private String redisLockTimeout = "2m";
 		/***
 		 * 补充服务判断事务超时的时间
@@ -69,6 +73,10 @@ public class TCCProperties {
 		private String timeout = "2m";
 		public long getTimeoutInSeconds() {
 			return LangOps.timeToSeconds(timeout, 120L);
+		}
+		
+		public boolean isUseReidsLock() {
+			return LOCKER_REDIS.equalsIgnoreCase(locker);
 		}
 	}
 }

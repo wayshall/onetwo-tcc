@@ -31,4 +31,5 @@ jfish:
     tcc: 
         publish-txlog: true
         compensation: 
-            use-reids-lock: true
+            locker: dbm
+            timeout: 1m

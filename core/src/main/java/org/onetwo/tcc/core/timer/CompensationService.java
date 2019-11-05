@@ -7,6 +7,7 @@ import org.onetwo.boot.module.redis.RedisLockRunner;
 import org.onetwo.common.date.Dates;
 import org.onetwo.common.db.spi.BaseEntityManager;
 import org.onetwo.common.spring.SpringUtils;
+import org.onetwo.dbm.lock.SimpleDBLocker;
 import org.onetwo.tcc.core.TCCProperties;
 import org.onetwo.tcc.core.TCCProperties.CompensationProps;
 import org.onetwo.tcc.core.entity.TXLogEntity;
@@ -43,6 +44,10 @@ public class CompensationService implements InitializingBean {
 	private ApplicationContext applicationContext;
 	@Value(TCCProperties.SERVICE_ID)
 	private String serviceId;
+	@Autowired
+	private CompensationService _this;
+	@Autowired
+	private SimpleDBLocker dblocker;
 
 
 	@Override
@@ -50,31 +55,36 @@ public class CompensationService implements InitializingBean {
 		if (compensationProps.isUseReidsLock()) {
 			RedisLockRegistry redisLock = SpringUtils.getBean(applicationContext, RedisLockRegistry.class);
 			if (redisLock==null) {
-				throw new IllegalStateException("config[" + CompensationProps.ENABLED_REDIS_LOCK_KEY + "] is enabled, "
+				throw new IllegalStateException("config[" + CompensationProps.LOCKER_KEY + "] is " + CompensationProps.LOCKER_REDIS + ", "
 						+ "but RedisLockRegistry not found!");
 			}
 			this.redisLockRegistry = redisLock;
+		} else {
+			dblocker.initLocker(serviceId);
 		}
 	}
 
 	
 	
-	@Scheduled(fixedRateString="${"+CompensationProps.FIXED_RATE_KEY+":30000}", initialDelay=30000)
-	@Transactional
+	@Scheduled(fixedDelayString="${"+CompensationProps.TIMER_CONFIG_KEY+":30000}", initialDelay=30000)
 	public void scheduleCheckExecutingTXLogs(){
 		log.info("start to check executing TXLogs...");
 		if(compensationProps.isUseReidsLock()){
 			getRedisLockRunner().tryLock(()->{
-				markExecutingTXLogsToTimeout();
+				_this.markExecutingTXLogsToTimeout();
 				return null;
 			});
 		}else{
-			markExecutingTXLogsToTimeout();
+			dblocker.lock(serviceId, () -> {
+				_this.markExecutingTXLogsToTimeout();
+				return null;
+			});
 		}
 		log.info("finish check executing TXLogs...");
 	}
-
-	protected void markExecutingTXLogsToTimeout() {
+	
+	@Transactional
+	public void markExecutingTXLogsToTimeout() {
 		LocalDateTime timeoutAt = LocalDateTime.now().minusSeconds(compensationProps.getTimeoutInSeconds());
 		List<TXLogEntity> gtxlogList = baseEntityManager.from(TXLogEntity.class)
 						.where()

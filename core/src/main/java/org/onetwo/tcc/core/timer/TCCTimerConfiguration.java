@@ -1,6 +1,7 @@
 package org.onetwo.tcc.core.timer;
 
 import org.onetwo.boot.module.redis.RedisConfiguration;
+import org.onetwo.dbm.lock.DbmLockerConfiguration;
 import org.onetwo.tcc.core.TCCProperties;
 import org.onetwo.tcc.core.TCCProperties.CompensationProps;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +30,13 @@ public class TCCTimerConfiguration {
 
 	@Configuration
 	@ConditionalOnMissingBean(RedisConfiguration.class)
-	@ConditionalOnProperty(value=CompensationProps.ENABLED_REDIS_LOCK_KEY, matchIfMissing=true)
+	@ConditionalOnProperty(value=CompensationProps.LOCKER_KEY, havingValue=CompensationProps.LOCKER_REDIS, matchIfMissing=true)
 	@Import(RedisConfiguration.class)
 	protected class RedisLockConfiguration {
+	}
+
+	@ConditionalOnProperty(value=CompensationProps.LOCKER_KEY, havingValue=CompensationProps.LOCKER_DBM)
+	@Import(DbmLockerConfiguration.class)
+	protected class DBLockerConfiguration {
 	}
 }

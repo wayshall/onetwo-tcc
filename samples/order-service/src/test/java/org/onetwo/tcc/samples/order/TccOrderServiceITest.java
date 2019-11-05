@@ -36,7 +36,7 @@ public class TccOrderServiceITest extends TccOrderBaseApplicationUTests {
     @Autowired
     private CouponClient couponClient;
     
-    private boolean testWithCoupon = true;
+    private boolean testWithCoupon = false;
     
     @Autowired
     private ErrorOnRollbackListenner errorOnRollbackListenner;

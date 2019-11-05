@@ -31,8 +31,8 @@ jfish:
     tcc: 
         publish-txlog: true
         compensation: 
-            use-reids-lock: true
-            timeout: 30s
+            locker: dbm
+            timeout: 1m
 logging: 
     level: 
         org.onetwo.tcc.samples.order.client.SkuClient: DEBUG
