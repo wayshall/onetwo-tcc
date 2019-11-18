@@ -46,7 +46,7 @@ public class CompensationService implements InitializingBean {
 	private String serviceId;
 	@Autowired
 	private CompensationService _this;
-	@Autowired
+	@Autowired(required=false)
 	private SimpleDBLocker dblocker;
 
 

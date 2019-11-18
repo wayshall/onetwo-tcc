@@ -6,7 +6,6 @@ import org.onetwo.common.spring.SpringUtils;
 import org.onetwo.ext.alimq.OnsMessage;
 import org.onetwo.ext.alimq.SimpleMessage;
 import org.onetwo.ext.ons.ONSProperties.MessageSerializerType;
-import org.onetwo.ext.ons.producer.ProducerService;
 import org.onetwo.tcc.core.TCCProperties;
 import org.onetwo.tcc.core.entity.TXLogEntity;
 import org.onetwo.tcc.core.internal.event.GTXLogEvent;
@@ -31,7 +30,7 @@ import org.springframework.util.Assert;
 public class DefaultTXLogMessagePublisher implements TXLogMessagePublisher, InitializingBean {
 	private final Logger logger = JFishLoggerFactory.getLogger(TXLogMessagePublisher.class);
 //	@Autowired
-	private ProducerService producerService;
+	private TCCProducerService producerService;
 	@Autowired
 	private ApplicationContext applicationContext;
 	@Value(TCCProperties.PRODUER_ID)
@@ -41,7 +40,7 @@ public class DefaultTXLogMessagePublisher implements TXLogMessagePublisher, Init
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		this.producerService = SpringUtils.getBean(applicationContext, producerId);
+		this.producerService = SpringUtils.getBean(applicationContext, TCCProducerService.class);
 		Assert.notNull(producerService, "producer not found: " + producerId);
 	}
 

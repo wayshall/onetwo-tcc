@@ -27,7 +27,7 @@ public class TCCProperties {
 	 * for one db multip service
 	 */
 	public static final String SERVICE_ID = "${" + PREFIX_KEY + ".service-id:${spring.application.name}}";
-	public static final String PRODUER_ID = "${" + PREFIX_KEY + ".producer-id:producer-${spring.application.name}}";
+	public static final String PRODUER_ID = "${" + PREFIX_KEY + ".producer-id:tcc-producer-${spring.application.name}}";
 	/***
 	 * jfish.tcc.topic.name
 	 */
