@@ -40,7 +40,7 @@ public class TCCProperties {
 	public static final String TAG_TXLOG = "${" + PREFIX_KEY + ".rmq.tags.txlog:TXLOG}";
 //	public static final String CONSUMER_TXLOG = "${" + PREFIX_KEY + ".rmq.consumers:txlog-consumer}";
 
-	private CompensationProps compensation;
+	private CompensationProps compensation = new CompensationProps();
 	/***
 	 * io error, timeout ...
 	 */
