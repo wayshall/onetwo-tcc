@@ -37,6 +37,18 @@
 ### 启用注解
 要使用tcc功能，首先要使用 @EnableTCC 注解，激活加载tcc相关组件
 
+```Java
+@SpringBootApplication
+@EnableTCC
+public class TccServiceApplication {
+	public static void main(String[] args) {
+		SpringApplication.run(TccOrderServiceApplication.class, args);
+	}
+}
+```
+
+
+
 ###  tcc事务注解使用
 
 0、使用@TCCService注解标记服务类为Tcc服务类
