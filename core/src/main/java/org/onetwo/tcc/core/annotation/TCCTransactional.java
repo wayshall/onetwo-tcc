@@ -5,19 +5,24 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * @author weishao zeng
  * <br/>
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@Transactional
 public @interface TCCTransactional {
 	
 	/***
 	 * 用于标识是否可作为全局事务方法（即主事务开始调用的方法）
 	 * 若方法是不可作为全局事务方法的，又找不到远程调用的事务上下文，则会抛错。
+	 * 但可以作为分支事务方法被调用
 	 * 
 	 * 当作为全局事务方法时，confirmMethod和cancelMethod可为空
+	 * 
 	 * @author weishao zeng
 	 * @return
 	 */
