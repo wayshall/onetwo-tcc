@@ -5,15 +5,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.transaction.annotation.Transactional;
-
 /**
  * @author weishao zeng
  * <br/>
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Transactional
+//@Transactional
 public @interface TCCTransactional {
 	
 	/***

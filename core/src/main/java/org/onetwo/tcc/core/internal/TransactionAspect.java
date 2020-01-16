@@ -27,6 +27,7 @@ import org.onetwo.tcc.core.util.TCCTransactionalMeta;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.Ordered;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import lombok.Getter;
@@ -37,7 +38,7 @@ import lombok.Setter;
  * <br/>
  */
 @Aspect
-public class TransactionAspect {
+public class TransactionAspect implements Ordered {
 	
 	private TCCTXContextLookupService txContextLookupService;
 	@Getter
@@ -70,14 +71,22 @@ public class TransactionAspect {
 //		TransactionContext ctx = CURRENT_CONTEXTS.get();
 		TransactionResourceHolder resource = TCCInvokeContext.get(); // (TransactionResourceHolder)TransactionSynchronizationManager.getResource(CONTEXT_BIND_KEY);
 		if (resource==null) {
+			if (TransactionSynchronizationManager.isActualTransactionActive()) {
+				throw new TCCException(TCCErrors.ERR_CANNOT_WRAP_LOCAL_TRANSACTIONAL);
+			}
+			
 			resource = this.createTransactionResourceHolder(pjp);
 			resource.check();
 			
 //			TransactionSynchronizationManager.bindResource(CONTEXT_BIND_KEY, resource);
 			TCCInvokeContext.set(resource);
+			if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+				TransactionSynchronizationManager.initSynchronization();
+			}
 			TCCTransactionSynchronization synchronization = new TCCTransactionSynchronization(resource);
 			TransactionSynchronizationManager.registerSynchronization(synchronization);
 
+			// 独立事务插入日志，此时外层不能事务
 			resource.createTxLog();
 		} else {
 			throw new TCCException(TCCErrors.ERR_ONLYONE_TCC_TRANSACTIONAL);
@@ -170,6 +179,12 @@ public class TransactionAspect {
 	
 	protected String nextId() {
 		return String.valueOf(idGenerator.nextId());
+	}
+
+
+	@Override
+	public int getOrder() {
+		return Ordered.HIGHEST_PRECEDENCE;
 	}
 	
 }

@@ -23,6 +23,11 @@ public enum TCCErrors implements ErrorType {
 	ERR_TOO_MANY_CONFIRM("Too many confirm methods!"),
 	ERR_TOO_MANY_CANCEL("Too many cancel methods!"),
 	
+	/***
+	 * tcc事务外层不能被本地事务包裹
+	 */
+	ERR_CANNOT_WRAP_LOCAL_TRANSACTIONAL("@TCCTransaction can not wrapped by @Transaction!"),
+	
 	ERR_REMOTE("Invoke remote error!");
 	
 	private String message;
