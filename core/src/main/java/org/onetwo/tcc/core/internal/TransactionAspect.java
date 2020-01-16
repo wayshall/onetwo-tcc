@@ -68,7 +68,7 @@ public class TransactionAspect implements Ordered {
 	@Around("@annotation(org.onetwo.tcc.core.annotation.TCCTransactional)")
 //	@Pointcut("@annotation(org.onetwo.tcc.annotation.TCCTransactional)")
 	public Object startTransaction(ProceedingJoinPoint pjp) throws Throwable {
-		MethodSignature ms = (MethodSignature)pjp.getSignature();
+//		MethodSignature ms = (MethodSignature)pjp.getSignature();
 //		TransactionContext ctx = CURRENT_CONTEXTS.get();
 		TransactionResourceHolder resource = TCCInvokeContext.get(); // (TransactionResourceHolder)TransactionSynchronizationManager.getResource(CONTEXT_BIND_KEY);
 		boolean mustRegisterSynchronization = false;
