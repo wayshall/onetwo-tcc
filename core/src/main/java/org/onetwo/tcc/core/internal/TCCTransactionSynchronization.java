@@ -24,19 +24,19 @@ public class TCCTransactionSynchronization extends TransactionSynchronizationAda
 	}
 
 	/***
-	 * 事务挂起时，不挂起tcc上下文，否则在新的事务里的远程调用里获取不到事务上下文
+	 * 事务挂起
 	 */
 	@Override
 	public void suspend() {
-//		TCCInvokeContext.remove();
+		TCCInvokeContext.remove();
 	}
 
 	/***
-	 * 没有挂起，所以不用恢复事务
+	 * 恢复事务
 	 */
 	@Override
 	public void resume() {
-//		TCCInvokeContext.set(resourceHolder);
+		TCCInvokeContext.set(resourceHolder);
 	}
 
 	@Override
