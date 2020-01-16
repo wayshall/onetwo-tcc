@@ -7,7 +7,6 @@ import org.onetwo.dbm.exception.EntityVersionException;
 import org.onetwo.tcc.core.TCCProperties;
 import org.onetwo.tcc.core.entity.TXContentData;
 import org.onetwo.tcc.core.entity.TXLogEntity;
-import org.onetwo.tcc.core.exception.TCCErrors;
 import org.onetwo.tcc.core.exception.TCCStatusChangedException;
 import org.onetwo.tcc.core.spi.TXLogMessagePublisher;
 import org.onetwo.tcc.core.spi.TXLogRepository;
@@ -16,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import lombok.Getter;
 

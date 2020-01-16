@@ -17,25 +17,30 @@ import org.onetwo.tcc.core.spi.LocalTransactionHandler;
 import org.onetwo.tcc.core.spi.TXLogRepository;
 import org.onetwo.tcc.core.util.GTXActions;
 import org.onetwo.tcc.core.util.TCCTransactionType;
+import org.onetwo.tcc.core.util.TCCUtils;
 import org.onetwo.tcc.core.util.TXStatus;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.MethodIntrospector;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ReflectionUtils.MethodFilter;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author weishao zeng
  * <br/>
  */
-@Slf4j
+//@Slf4j
 public class DefaultLocalTransactionHandler implements LocalTransactionHandler {
 
+	final private Logger log = TCCUtils.getLogger();
+	
 	@Autowired
 	private TXLogRepository txlogRepository;
 	@Autowired
 	private ApplicationContext applicationContext;
+	@Autowired
+	private DefaultLocalTransactionHandler _this;
 	
 	@Override
 	public void handle(GTXLogMessage txlogMessage) {
@@ -185,6 +190,15 @@ public class DefaultLocalTransactionHandler implements LocalTransactionHandler {
 								.put("target class", beanType);
 		}
 		Method method = LangUtils.getFirst(methods);
+//		ReflectUtils.invokeMethod(method, bean, data.getArguments());
+		_this.invokeLocalMethod(txlog, bean, method, data);
+	}
+	
+	@Transactional
+	public void invokeLocalMethod(TXLogEntity txlog, Object bean, Method method, TXContentData data) {
+		if (log.isInfoEnabled()) {
+			log.info(txlog.logMessage("invoke local method, method: {}"), method);
+		}
 		ReflectUtils.invokeMethod(method, bean, data.getArguments());
 	}
 }
