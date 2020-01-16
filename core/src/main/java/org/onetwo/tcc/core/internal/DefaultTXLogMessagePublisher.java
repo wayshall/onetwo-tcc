@@ -73,6 +73,9 @@ public class DefaultTXLogMessagePublisher implements TXLogMessagePublisher, Init
 				.body(message)
 				.build();
 		this.producerService.sendMessage(onsMessage, SendMessageFlags.EnableDatabaseTransactional);
+		if (logger.isInfoEnabled()) {
+			logger.info(txlog.logMessage(" publish {} message"), message.getAction());
+		}
 	}
 	
 	protected void publishGTXLogEvent(GTXLogMessage message, TXLogEntity txlog) {

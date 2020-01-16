@@ -13,6 +13,7 @@ import org.onetwo.tcc.core.internal.DefaultTXLogRepository;
 import org.onetwo.tcc.core.internal.GTXLogConsumer;
 import org.onetwo.tcc.core.internal.TCCMethodsManager;
 import org.onetwo.tcc.core.internal.TCCProducerService;
+import org.onetwo.tcc.core.internal.TccAndLocalSynchronizationWrapper;
 import org.onetwo.tcc.core.internal.TransactionAspect;
 import org.onetwo.tcc.core.spi.LocalTransactionHandler;
 import org.onetwo.tcc.core.spi.TCCTXContextLookupService;
@@ -50,6 +51,11 @@ public class TCCConfiguration {
 		TransactionAspect transactionAspect = new TransactionAspect(tccInterceptorManager(), globalTransactionIdLookupService, txLogRepository);
 		transactionAspect.setRemoteExceptions(tccProperties.getRemoteExceptions());
 		return transactionAspect;
+	}
+	
+	@Bean
+	public TccAndLocalSynchronizationWrapper tccAndLocalSynchronizationWrapper() {
+		return new TccAndLocalSynchronizationWrapper();
 	}
 	
 	@Bean

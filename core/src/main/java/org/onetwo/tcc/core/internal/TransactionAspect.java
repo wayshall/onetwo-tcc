@@ -19,7 +19,6 @@ import org.onetwo.tcc.core.exception.TCCRemoteException;
 import org.onetwo.tcc.core.spi.TCCTXContextLookupService;
 import org.onetwo.tcc.core.spi.TCCTXContextLookupService.TXContext;
 import org.onetwo.tcc.core.spi.TXInterceptor;
-import org.onetwo.tcc.core.spi.TXInterceptor.TXInterceptorChain;
 import org.onetwo.tcc.core.spi.TXLogRepository;
 import org.onetwo.tcc.core.util.TCCInvokeContext;
 import org.onetwo.tcc.core.util.TCCTransactionType;
@@ -53,6 +52,8 @@ public class TransactionAspect implements Ordered {
     private SimpleInterceptorManager<TXInterceptor> interceptorManager;
     @Autowired
     private TCCMethodsManager tccMethodsManager;
+    @Autowired
+    private TccAndLocalSynchronizationWrapper tccAndLocalSynchronizationWrapper;
 
 	public TransactionAspect(SimpleInterceptorManager<TXInterceptor> interceptorManager, 
 			TCCTXContextLookupService txContextLookupService,
@@ -70,6 +71,7 @@ public class TransactionAspect implements Ordered {
 		MethodSignature ms = (MethodSignature)pjp.getSignature();
 //		TransactionContext ctx = CURRENT_CONTEXTS.get();
 		TransactionResourceHolder resource = TCCInvokeContext.get(); // (TransactionResourceHolder)TransactionSynchronizationManager.getResource(CONTEXT_BIND_KEY);
+		boolean mustRegisterSynchronization = false;
 		if (resource==null) {
 			if (TransactionSynchronizationManager.isActualTransactionActive()) {
 				throw new TCCException(TCCErrors.ERR_CANNOT_WRAP_LOCAL_TRANSACTIONAL);
@@ -80,11 +82,13 @@ public class TransactionAspect implements Ordered {
 			
 //			TransactionSynchronizationManager.bindResource(CONTEXT_BIND_KEY, resource);
 			TCCInvokeContext.set(resource);
-			if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-				TransactionSynchronizationManager.initSynchronization();
-			}
-			TCCTransactionSynchronization synchronization = new TCCTransactionSynchronization(resource);
-			TransactionSynchronizationManager.registerSynchronization(synchronization);
+			mustRegisterSynchronization = true;
+//			if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+//				TransactionSynchronizationManager.initSynchronization();
+//			}
+//			// 不能在这里注册，因为这里没有事务上下文，无法触发事务事件
+//			TCCTransactionSynchronization synchronization = new TCCTransactionSynchronization(resource);
+//			TransactionSynchronizationManager.registerSynchronization(synchronization);
 
 			// 独立事务插入日志，此时外层不能事务
 			resource.createTxLog();
@@ -94,15 +98,16 @@ public class TransactionAspect implements Ordered {
 		
 		Object result = null;;
 		try {
-			TXInterceptorChain interceptorChain = new TXInterceptorChain(resource, 
-																		pjp.getTarget(), 
-																		ms.getMethod(), 
-																		pjp.getArgs(), 
-																		interceptorManager.getInterceptors(), 
-																		() -> {
-																			return pjp.proceed();
-																		});
-			result = interceptorChain.invoke();
+//			TXInterceptorChain interceptorChain = new TXInterceptorChain(resource, 
+//																		pjp.getTarget(), 
+//																		ms.getMethod(), 
+//																		pjp.getArgs(), 
+//																		interceptorManager.getInterceptors(), 
+//																		() -> {
+//																			return pjp.proceed();
+//																		});
+//			result = interceptorChain.invoke();
+			result = this.tccAndLocalSynchronizationWrapper.wrap(pjp, resource, interceptorManager.getInterceptors(), mustRegisterSynchronization);
 		} catch (Throwable e) {
 			handleException(e);
 		} finally {
