@@ -88,12 +88,17 @@ public class BranchTccService {
 }
 ```
 
+**注意 **
+
+- 分支事务方法不需要加事务注解，tcc框架内部已自动包装了事务
+
+
+
 3、confirm和cancel方法签名必须与try方法一致，且在同一个类
 
 ```Java
 	
 @Service
-@Transactional
 @TCCService
 public class BranchTccService {
     @TCCTransactional(globalized=false, confirmMethod="confirm", cancelMethod="cancel")
