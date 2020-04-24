@@ -29,7 +29,7 @@ public class TCCProperties {
 	public static final String SERVICE_ID = "${" + PREFIX_KEY + ".service-id:${spring.application.name}}";
 	public static final String PRODUER_ID = "${" + PREFIX_KEY + ".producer-id:tcc-producer-${spring.application.name}}";
 	/***
-	 * jfish.tcc.topic.name
+	 * jfish.tcc.rmq.topic
 	 */
 	public static final String TOPIC = "${" + PREFIX_KEY + ".rmq.topic:TCC}";
 	/***
