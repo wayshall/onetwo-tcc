@@ -28,7 +28,8 @@ public class GTXLogConsumer {
 
 	@ONSSubscribe(topic=TCCProperties.TOPIC, 
 				tags=TCCProperties.TAG_GTXLOG, 
-				consumerId=TCCProperties.CONSUMER_GTXLOG, 
+				consumerId=TCCProperties.CONSUMER_GTXLOG,
+				appendConsumerPrefix = false,
 				idempotent=IdempotentType.DATABASE)
 	public void consumeGTXLog(ConsumContext context, GTXLogMessage txlogMessage) {
 		transactionHandler.handle(txlogMessage);
