@@ -5,6 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Import;
 
 /**
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Import;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Import({EnableTCCSelector.class})
+@Conditional(TCCEnabledKeyCondition.class)
 public @interface EnableTCC {
 	
 	String[] basePackages() default {};
