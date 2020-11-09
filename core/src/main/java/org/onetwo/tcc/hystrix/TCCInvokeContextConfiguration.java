@@ -1,5 +1,6 @@
 package org.onetwo.tcc.hystrix;
 
+import org.onetwo.tcc.core.TCCProperties;
 import org.onetwo.tcc.hystrix.TCCInvokeContextConfiguration.TCCInvokeContextCondition;
 import org.springframework.boot.autoconfigure.condition.AllNestedConditions;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -16,6 +17,7 @@ import com.netflix.hystrix.Hystrix;
  */
 @Configuration
 @Conditional(TCCInvokeContextCondition.class)
+@ConditionalOnProperty(value = TCCProperties.ENABLED_KEY, matchIfMissing = true)
 public class TCCInvokeContextConfiguration {
 
 	@Bean
