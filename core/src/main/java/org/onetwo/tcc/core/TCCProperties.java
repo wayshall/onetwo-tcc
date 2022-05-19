@@ -32,11 +32,11 @@ public class TCCProperties {
 	/***
 	 * jfish.tcc.rmq.topic
 	 */
-	public static final String TOPIC = "${" + PREFIX_KEY + ".rmq.topic:TCC-${env.topic-prefix:TCC-${spring.application.name}}}";
+	public static final String TOPIC = "${" + PREFIX_KEY + ".rmq.topic:TCC-${env.topic-prefix:${spring.application.name}}}";
 	/***
 	 * 事务
 	 */
-	public static final String CONSUMER_GTXLOG = "${" + PREFIX_KEY + ".rmq.consumers.gtxlog:GTXLOG-${env.topic-prefix:GTXLOG-${spring.application.name}}}";
+	public static final String CONSUMER_GTXLOG = "${" + PREFIX_KEY + ".rmq.consumers.gtxlog:GTXLOG-${env.topic-prefix:${spring.application.name}}}";
 	public static final String TAG_GTXLOG = "${" + PREFIX_KEY + ".rmq.tags.gtxlog:GTXLOG}";
 	public static final String TAG_TXLOG = "${" + PREFIX_KEY + ".rmq.tags.txlog:TXLOG}";
 //	public static final String CONSUMER_TXLOG = "${" + PREFIX_KEY + ".rmq.consumers:txlog-consumer}";
