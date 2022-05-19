@@ -40,7 +40,7 @@ public class TXLogEntity extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	TXStatus status;
 	
-	@DbmJsonField(storeTyping=true, convertibleJavaType=JsonConvertibleTypes.BYTE_ARRAY)
+	@DbmJsonField(storeTyping=true, convertibleJavaType=JsonConvertibleTypes.STRING)
 	TXContentData content;
 	
 	@Version
