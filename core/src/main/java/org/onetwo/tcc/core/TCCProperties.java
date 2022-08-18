@@ -21,7 +21,7 @@ public class TCCProperties {
 	/***
 	 * jfish.tcc
 	 */
-	public static final String PREFIX_KEY = BootJFishConfig.PREFIX + ".tcc";
+	public static final String PREFIX_KEY = BootJFishConfig.ZIFISH_CONFIG_PREFIX + ".tcc";
 	public static final String ENABLED_KEY = PREFIX_KEY + ".enabled";
 
 	/***
