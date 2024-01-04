@@ -2,7 +2,7 @@
 
 package org.onetwo.tcc.samples.product.controller;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.onetwo.tcc.samples.product.api.SkuApi;
 import org.onetwo.tcc.samples.product.service.impl.SkuServiceImpl;

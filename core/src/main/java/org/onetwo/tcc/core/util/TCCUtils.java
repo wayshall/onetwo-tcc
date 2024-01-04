@@ -17,7 +17,7 @@ import org.onetwo.tcc.core.exception.TCCErrors;
 import org.onetwo.tcc.core.exception.TCCException;
 import org.slf4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.util.Assert;
+import org.onetwo.common.utils.Assert;
 
 public class TCCUtils {
 	

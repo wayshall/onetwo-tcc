@@ -1,6 +1,6 @@
 package org.onetwo.tcc.samples.product.api;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
