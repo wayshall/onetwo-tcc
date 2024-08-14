@@ -21,21 +21,22 @@ public class TCCProperties {
 	/***
 	 * jfish.tcc
 	 */
-	public static final String PREFIX_KEY = BootJFishConfig.PREFIX + ".tcc";
+	public static final String PREFIX_KEY = BootJFishConfig.ZIFISH_CONFIG_PREFIX + ".tcc";
+	public static final String ENABLED_KEY = PREFIX_KEY + ".enabled";
 
 	/***
 	 * for one db multip service
 	 */
 	public static final String SERVICE_ID = "${" + PREFIX_KEY + ".service-id:${spring.application.name}}";
-	public static final String PRODUER_ID = "${" + PREFIX_KEY + ".producer-id:tcc-producer-${spring.application.name}}";
+	public static final String PRODUER_ID = "${" + PREFIX_KEY + ".producer-id:tcc-producer-${env.topic-prefix:${spring.application.name}}}";
 	/***
 	 * jfish.tcc.rmq.topic
 	 */
-	public static final String TOPIC = "${" + PREFIX_KEY + ".rmq.topic:TCC}";
+	public static final String TOPIC = "${" + PREFIX_KEY + ".rmq.topic:TCC-${env.topic-prefix:${spring.application.name}}}";
 	/***
 	 * 事务
 	 */
-	public static final String CONSUMER_GTXLOG = "${" + PREFIX_KEY + ".rmq.consumers.gtxlog:${spring.application.name}-GTXLOG}";
+	public static final String CONSUMER_GTXLOG = "${" + PREFIX_KEY + ".rmq.consumers.gtxlog:GTXLOG-${env.topic-prefix:${spring.application.name}}}";
 	public static final String TAG_GTXLOG = "${" + PREFIX_KEY + ".rmq.tags.gtxlog:GTXLOG}";
 	public static final String TAG_TXLOG = "${" + PREFIX_KEY + ".rmq.tags.txlog:TXLOG}";
 //	public static final String CONSUMER_TXLOG = "${" + PREFIX_KEY + ".rmq.consumers:txlog-consumer}";

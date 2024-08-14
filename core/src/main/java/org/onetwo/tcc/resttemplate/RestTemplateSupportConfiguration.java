@@ -4,9 +4,11 @@ import java.util.List;
 
 import org.onetwo.common.apiclient.RestExecutor;
 import org.onetwo.common.spring.SpringUtils;
+import org.onetwo.tcc.core.TCCProperties;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +24,7 @@ import com.google.common.collect.Lists;
  */
 @Configuration
 @ConditionalOnClass(RestTemplate.class)
+@ConditionalOnProperty(value = TCCProperties.ENABLED_KEY, matchIfMissing = true)
 public class RestTemplateSupportConfiguration {
 	
 	@Bean

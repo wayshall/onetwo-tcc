@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Import;
  * <br/>
  */
 @Configuration
+@ConditionalOnProperty(value = TCCProperties.ENABLED_KEY, matchIfMissing = true)
 public class TCCTimerConfiguration {
 
 	@Autowired

@@ -4,7 +4,7 @@
 	
     <groupId>org.onetwo4j</groupId>
 	<artifactId>onetwo-tcc-parent</artifactId>
-	<version>0.5.1-SNAPSHOT</version>
+	<version>5.2.7-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>onetwo-tcc-parent</name>
@@ -14,7 +14,7 @@
   <properties>
 	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	<java.version>1.8</java.version>
-    <onetwo.version>4.7.4-SNAPSHOT</onetwo.version>
+    <onetwo.version>5.2.7-SNAPSHOT</onetwo.version>
     <spring-cloud.version>Edgware.SR2</spring-cloud.version>
   </properties> 
   
@@ -64,11 +64,6 @@
     <dependency>
       <groupId>org.onetwo4j</groupId>
       <artifactId>onetwo-dbm</artifactId>
-    </dependency>
-        
-    <dependency>
-        <groupId>org.springframework.integration</groupId>
-        <artifactId>spring-integration-redis</artifactId>
     </dependency>
     
     <!-- spring begin -->
@@ -239,43 +234,52 @@
                         </execution>
                     </executions>
                 </plugin>
-                <!-- GPG -->
+                 <!-- GPG -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
                     <version>1.5</version>
                     <executions>
-                        <execution>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>sign</goal>
-                            </goals>
-                        </execution>
+                         <execution>
+                             <id>sign-artifacts</id>
+                             <phase>verify</phase>
+                             <goals>
+                                 <goal>sign</goal>
+                             </goals>
+                            <configuration>
+                                <keyname>${gpg.keyname}</keyname>
+                                <passphraseServerId>ossrh</passphraseServerId>
+                                <gpgArguments>
+                                    <arg>--pinentry-mode</arg>
+                                    <arg>loopback</arg>
+                                </gpgArguments>
+                            </configuration>
+                         </execution>
                     </executions>
                 </plugin>
                 <plugin>
-                   <groupId>org.sonatype.plugins</groupId>
-                   <artifactId>nexus-staging-maven-plugin</artifactId>
-                   <version>1.6.3</version>
-                   <extensions>true</extensions>
-                   <configuration>
-                     <serverId>oss</serverId>
-                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                   </configuration>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>1.6.7</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <serverId>ossrh</serverId>
+                        <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    </configuration>
                  </plugin>
                </plugins>
            </build>
-	        <distributionManagement>
-	            <snapshotRepository>
-	                <id>oss</id>
-	                <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-	            </snapshotRepository>
-	            <repository>
-	                <id>oss</id>
-	                <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-	            </repository>
-	        </distributionManagement>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+                <repository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+                </repository>
+            </distributionManagement>
        </profile>
     </profiles>
   
