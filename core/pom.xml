@@ -19,6 +19,14 @@
   </properties>
 
   <dependencies>
+    
+    <!-- feign hystrix -->
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+        <version>2.2.10.RELEASE</version>
+        <optional>true</optional>
+    </dependency>
   
     <dependency>
       <groupId>org.springframework.cloud</groupId>
