@@ -3,7 +3,7 @@
 
   <groupId>org.onetwo4j</groupId>
   <artifactId>onetwo-tcc-modules</artifactId>
-  <version>0.5.1-SNAPSHOT</version>
+  <version>5.0.0</version>
   <packaging>pom</packaging>
 
   <name>onetwo-tcc-modules</name>
